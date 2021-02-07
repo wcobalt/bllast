@@ -35,11 +35,15 @@ namespace bllast {
     public:
         BllAstTruthTable(std::set<std::string> variableNames, std::vector<bool> truthTable);
 
-        const std::set<std::string>& getVariables() const;
+        const std::set<std::string>& getVariableNames() const;
 
         bool getValue(uint64_t number) const;
 
+        std::vector<bool> computeParametersSet(uint64_t number) const;
+
         virtual std::string toString() const;
+
+        uint64_t getSize() const;
     };
 }
 

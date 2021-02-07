@@ -16,12 +16,25 @@ BllAstTruthTable::BllAstTruthTable(std::set<std::string> variableNames, std::vec
         : variableNames(std::move(variableNames)),
           truthTable(std::move(truthTable)) {}
 
-const std::set<std::string> &BllAstTruthTable::getVariables() const {
+const std::set<std::string> &BllAstTruthTable::getVariableNames() const {
     return variableNames;
 }
 
 bool BllAstTruthTable::getValue(uint64_t number) const {
     return truthTable[number];
+}
+
+std::vector<bool> BllAstTruthTable::computeParametersSet(uint64_t number) const {
+    size_t variablesCount = variableNames.size();
+    std::vector<bool> parametersSet(variablesCount);
+
+    for (size_t v = 0; v < variablesCount; ++v) {
+        bool value = (number >> (variablesCount - 1 - v)) & 1u;
+
+        parametersSet[v] = value;
+    }
+
+    return parametersSet;
 }
 
 std::string BllAstTruthTable::toString() const {
@@ -71,11 +84,12 @@ void BllAstTruthTable::placeBody(TextCanvas &canvas, TextCanvasUtils &textCanvas
     unsigned borderedCellSize = varCellSize + 1;
 
     for (size_t c = 0; c < truthTable.size(); ++c) {
+        std::vector<bool> values = computeParametersSet(c);
+
         for (size_t v = 0; v < variableNames.size(); ++v) {
             unsigned valueX = borderedCellSize * v + borderedCellSize / 2;
-            bool value = (c >> (variableNames.size() - 1 - v)) & 1u;
 
-            canvas.getPointer()[c + 3][valueX] = static_cast<char>('0' + value);
+            canvas.getPointer()[c + 3][valueX] = static_cast<char>('0' + values[v]);
         }
 
         unsigned resultX = canvas.getWidth() - (canvas.getWidth() - borderedCellSize * variableNames.size()) / 2;
@@ -118,4 +132,8 @@ void BllAstTruthTable::placeVerticalCrossBorders(TextCanvas &canvas, unsigned x)
     canvas.getPointer()[0][x] = CROSS_BORDER;
     canvas.getPointer()[2][x] = CROSS_BORDER;
     canvas.getPointer()[canvas.getHeight() - 1][x] = CROSS_BORDER;
+}
+
+uint64_t BllAstTruthTable::getSize() const {
+    return truthTable.size();
 }

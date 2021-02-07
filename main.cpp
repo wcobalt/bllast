@@ -4,6 +4,7 @@
 #include "BllAstPnfChecker.h"
 #include "BllAstCalculator.h"
 #include "BllAstTruthTableComputer.h"
+#include "BllAstConverterToPnf.h"
 
 using namespace bllast;
 
@@ -15,6 +16,8 @@ const static char *CONJUNCTION_OP_CODE = "conj";
 const static char *EQUIVALENCE_OP_CODE = "equv";
 
 using Arity = BllAstOperator::Arity;
+
+//todo make more intensive use of references
 
 int main() {
     std::unique_ptr<BllAstMaker> bll_ast_maker = std::make_unique<BllAstMaker>();
@@ -107,6 +110,16 @@ int main() {
 
     std::cout << "Truth Table:\n" << tt->toString() << "\n";
     std::cout << "The serialized expression: " << root->toFormulaInStringForm();
+
+    std::unique_ptr<BllAstConverterToPnf> bll_ast_converter_to_pnf = std::make_unique<BllAstConverterToPnf>(
+            bll_ast_calculator.get(), bll_ast_truth_table_computer.get(), disjunction_operator.get(),
+            conjunction_operator.get(), negation_operator.get());
+
+    std::unique_ptr<BllAstNode> pcnf = bll_ast_converter_to_pnf->transformToPdnf(root.get());
+
+    std::cout << "PCNF: " << pcnf->toFormulaInStringForm() << "\n";
+    std::cout << "PCNF TT: " << bll_ast_truth_table_computer->
+        computeTruthTable(bll_ast_calculator.get(), pcnf.get())->toString() << "\n";
 
     return 0;
 }
