@@ -14,7 +14,7 @@
 namespace bllast {
     class BllAstMaker {
     public:
-        virtual void extendWithOperator(std::unique_ptr<BllAstOperator> bllOperator);
+        virtual void extendWithOperator(const BllAstOperator *bllOperator);
 
         virtual std::unique_ptr<BllAstNode> parse(std::string_view expression) const;
     protected:
@@ -32,7 +32,7 @@ namespace bllast {
         const static inline char* FALSE_LITERAL = "0";
         const static inline unsigned long EXPR_ERR_NEAR_SIZE = 5;
 
-        std::vector<std::unique_ptr<BllAstOperator>> operators;
+        std::vector<const BllAstOperator*> operators;
 
         enum class Starting {
             STARTING, FULL_MATCH, NO_WAY

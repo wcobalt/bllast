@@ -89,32 +89,43 @@ void BllAstNode::placeNodeOnCanvas(char **canvas, const BllAstNode *node,
 
     std::string head;
 
-    if (node->type == BllAstNodeType::OPERATOR) {
-        head = node->getOp()->getCode();
+    switch (node->type) {
+        case BllAstNodeType::OPERATOR: {
+            head = node->getOp()->getCode();
 
-        size_t n = currentOffset * 2;
+            size_t n = currentOffset * 2;
 
-        unsigned center = (currentOffset * cellSize + cellSize / 2);
-        unsigned nextLevelCellSize = (width / (1ul << (currentDepth + 1)));
-        unsigned nextLevelY = y + 1;
+            unsigned center = (currentOffset * cellSize + cellSize / 2);
+            unsigned nextLevelCellSize = (width / (1ul << (currentDepth + 1)));
+            unsigned nextLevelY = y + 1;
 
-        for (size_t c = 0; c < node->getChildren().size(); ++c) {
-            const BllAstNode *child = node->getChildren()[c];
+            for (size_t c = 0; c < node->getChildren().size(); ++c) {
+                const BllAstNode *child = node->getChildren()[c];
 
-            unsigned x = (n * nextLevelCellSize + nextLevelCellSize / 2);
-            unsigned branchX = center + (static_cast<long>(x) - center) / 2
-                               - ((y != height - 3 && c == 0) ? 1 : 0); //3 is not a magic number, okay?
+                unsigned x = (n * nextLevelCellSize + nextLevelCellSize / 2);
+                unsigned branchX = center + (static_cast<long>(x) - center) / 2
+                                   - ((y != height - 3 && c == 0) ? 1 : 0); //3 is not a magic number, okay?
 
-            canvas[nextLevelY][branchX] = (c == 0 ? '/' : '\\');
+                canvas[nextLevelY][branchX] = (c == 0 ? '/' : '\\');
 
-            placeNodeOnCanvas(canvas, child, currentDepth + 1, n++, width, height);
+                placeNodeOnCanvas(canvas, child, currentDepth + 1, n++, width, height);
+            }
+
+            break;
         }
-    } else if (node->type == BllAstNodeType::VARIABLE)
-        head = node->getVariableName();
-    else if (node->type == BllAstNodeType::LITERAL)
-        head = static_cast<char>('0' + node->getValue());
-    else
-        throw std::runtime_error("Undefined type of a node");
+
+        case BllAstNodeType::VARIABLE:
+            head = node->getVariableName();
+
+            break;
+        case BllAstNodeType::LITERAL:
+            head = static_cast<char>('0' + node->getValue());
+
+            break;
+
+        default:
+            throw std::runtime_error("Undefined type of a node");
+    }
 
     //it's supposed that NODE_WIDTH / 2 >= max head width
     unsigned x = (currentOffset * cellSize + (cellSize - head.length()) / 2);

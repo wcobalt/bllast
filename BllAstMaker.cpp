@@ -7,8 +7,8 @@
 
 using namespace bllast;
 
-void BllAstMaker::extendWithOperator(std::unique_ptr<BllAstOperator> bllOperator) {
-    operators.emplace_back(std::move(bllOperator));
+void BllAstMaker::extendWithOperator(const BllAstOperator *bllOperator) {
+    operators.emplace_back(bllOperator);
 }
 
 bool BllAstMaker::checkVariable(std::string_view variable) const {
@@ -217,7 +217,7 @@ const BllAstOperator* BllAstMaker::checkOperator(std::string_view representation
                 throw std::invalid_argument("Invalid expression: arity mismatch for operator with \"" +
                                             std::string(representation) + "\" representation");
 
-            return op.get();
+            return op;
         }
     }
 

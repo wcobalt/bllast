@@ -3,4 +3,4 @@ project(1)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(1 main.cpp BllAstMaker.cpp BllAstMaker.h BllAstPnfChecker.cpp BllAstPnfChecker.h BllAstOperator.cpp BllAstOperator.h BllAstNode.cpp BllAstNode.h)
+add_executable(1 main.cpp BllAstMaker.cpp BllAstMaker.h BllAstPnfChecker.cpp BllAstPnfChecker.h BllAstOperator.cpp BllAstOperator.h BllAstNode.cpp BllAstNode.h BllAstCalculator.cpp BllAstCalculator.h)
