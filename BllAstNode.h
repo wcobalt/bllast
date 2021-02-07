@@ -32,6 +32,8 @@ namespace bllast {
 
         void placeNodeOnCanvas(textcanvas::TextCanvas& canvas, const BllAstNode *node, textcanvas::TextCanvasUtils& textCanvasUtils,
                                unsigned currentDepth, unsigned currentOffset) const;
+
+        std::string serialize(const BllAstNode* node) const;
     public:
         BllAstNode(BllAstNodeType type, std::string variableName, bool value, const BllAstOperator* op,
                    std::vector<std::unique_ptr<BllAstNode>> &children);
@@ -49,6 +51,8 @@ namespace bllast {
         std::vector<const BllAstNode*> getChildren() const;
 
         std::string toAstInStringForm(unsigned width = NODE_WIDTH) const;
+
+        std::string toFormulaInStringForm() const;
     };
 }
 

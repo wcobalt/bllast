@@ -22,7 +22,7 @@ const BllAstOperator *BllAstNode::getOp() const {
     return bllOperator;
 }
 
-std::vector<BllAstNode *> BllAstNode::getChildren() {//fixme i don't like the duplication
+std::vector<BllAstNode *> BllAstNode::getChildren() {//todo i don't like the duplication
     std::vector<BllAstNode*> result;
 
     for (auto& node_ptr : children)
@@ -56,6 +56,36 @@ std::string BllAstNode::toAstInStringForm(unsigned nodeWidth) const {
     textCanvasUtils->deleteCanvas(canvas);
 
     return result;
+}
+
+std::string BllAstNode::serialize(const BllAstNode *node) const {
+    switch (node->type) {
+        case BllAstNodeType::LITERAL:
+            return std::string(1, static_cast<char>('0' + node->getValue()));
+
+        case BllAstNodeType::VARIABLE:
+            return node->getVariableName();
+
+        case BllAstNodeType::OPERATOR:
+            switch (node->getOp()->getArity()) {
+                case BllAstOperator::Arity::UNARY:
+                    return '(' + node->getOp()->getRepresentation() + serialize(node->getChildren()[0]) + ')';
+
+                case BllAstOperator::Arity::BINARY:
+                    return '(' + serialize(node->getChildren()[0]) +
+                        node->getOp()->getRepresentation() + serialize(node->getChildren()[1]) + ')';
+
+                default:
+                    throw std::runtime_error("Unsupported arity");
+            }
+
+        default:
+            throw std::runtime_error("Undefined type of node");
+    }
+}
+
+std::string BllAstNode::toFormulaInStringForm() const {
+    return serialize(this);
 }
 
 void BllAstNode::placeNodeOnCanvas(TextCanvas& canvas, const BllAstNode *node, TextCanvasUtils& textCanvasUtils,

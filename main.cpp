@@ -106,6 +106,7 @@ int main() {
     auto tt = bll_ast_truth_table_computer->computeTruthTable(bll_ast_calculator.get(), root.get());
 
     std::cout << "Truth Table:\n" << tt->toString() << "\n";
+    std::cout << "The serialized expression: " << root->toFormulaInStringForm();
 
     return 0;
 }
