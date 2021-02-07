@@ -4,8 +4,11 @@
 
 #include "BllAstNode.h"
 #include "BllAstOperator.h"
+#include "TextCanvas.h"
+#include "TextCanvasUtils.h"
 
 using namespace bllast;
+using namespace textcanvas;
 
 BllAstNode::BllAstNodeType BllAstNode::getType() const {
     return type;
@@ -43,47 +46,21 @@ std::string BllAstNode::toAstInStringForm(unsigned nodeWidth) const {
     size_t width = (1ul << depth) * nodeWidth;
     size_t height = (depth + 1) * 2 - 1;
 
-    char** buffer = new char*[height];
+    std::unique_ptr<TextCanvasUtils> textCanvasUtils = std::make_unique<TextCanvasUtils>();
+    TextCanvas canvas = textCanvasUtils->createCanvas(width, height, FILLER);
 
-    for (size_t y = 0; y < height; ++y) {
-        buffer[y] = new char[width];
+    placeNodeOnCanvas(canvas, this, *textCanvasUtils, 0, 0);
 
-        for (size_t x = 0; x < width; ++x)
-            buffer[y][x] = FILLER;
-    }
+    std::string result = textCanvasUtils->transform(canvas);
 
-    placeNodeOnCanvas(buffer, this, 0, 0, width, height);
-
-    std::string result;
-
-    for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x)
-            result += buffer[y][x];
-
-        delete[] buffer[y];
-
-        result += '\n';
-    }
-
-    delete[] buffer;
+    textCanvasUtils->deleteCanvas(canvas);
 
     return result;
 }
 
-void BllAstNode::placeTextOnCanvas(char **canvas, std::string_view text, unsigned width, unsigned height,
-                                                unsigned x, unsigned y) const {
-
-    if (y < height) {
-        for (size_t p = 0; p < text.length(); ++p) {
-            if (x + p < width)
-                canvas[y][x + p] = text[p];
-        }
-    }
-}
-
-void BllAstNode::placeNodeOnCanvas(char **canvas, const BllAstNode *node,
-                                                unsigned currentDepth, unsigned currentOffset,
-                                                unsigned width, unsigned height) const {
+void BllAstNode::placeNodeOnCanvas(TextCanvas& canvas, const BllAstNode *node, TextCanvasUtils& textCanvasUtils,
+                                                unsigned currentDepth, unsigned currentOffset) const {
+    unsigned width = canvas.getWidth(), height = canvas.getHeight();
     unsigned cellSize = (width / (1ul << currentDepth));
     unsigned y = currentDepth * 2;
 
@@ -106,9 +83,9 @@ void BllAstNode::placeNodeOnCanvas(char **canvas, const BllAstNode *node,
                 unsigned branchX = center + (static_cast<long>(x) - center) / 2
                                    - ((y != height - 3 && c == 0) ? 1 : 0); //3 is not a magic number, okay?
 
-                canvas[nextLevelY][branchX] = (c == 0 ? '/' : '\\');
+                canvas.getPointer()[nextLevelY][branchX] = (c == 0 ? '/' : '\\');
 
-                placeNodeOnCanvas(canvas, child, currentDepth + 1, n++, width, height);
+                placeNodeOnCanvas(canvas, child, textCanvasUtils, currentDepth + 1, n++);
             }
 
             break;
@@ -130,7 +107,7 @@ void BllAstNode::placeNodeOnCanvas(char **canvas, const BllAstNode *node,
     //it's supposed that NODE_WIDTH / 2 >= max head width
     unsigned x = (currentOffset * cellSize + (cellSize - head.length()) / 2);
 
-    placeTextOnCanvas(canvas, head, width, height, x, y);
+    textCanvasUtils.placeText(canvas, x, y, head);
 }
 
 unsigned BllAstNode::findDepth(const BllAstNode* node, unsigned depth) const {

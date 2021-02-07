@@ -3,6 +3,7 @@
 #include "BllAstMaker.h"
 #include "BllAstPnfChecker.h"
 #include "BllAstCalculator.h"
+#include "BllAstTruthTableComputer.h"
 
 using namespace bllast;
 
@@ -100,10 +101,11 @@ int main() {
     std::cout << "Is PCNF: " << bll_ast_pnf_checker->isPerfectConjunctiveNormalForm(root.get()) << "\n";
     std::cout << "Is PDNF: " << bll_ast_pnf_checker->isPerfectDisjunctiveNormalForm(root.get()) << "\n";
 
-    bll_ast_calculator->putBllAst(root.get());
-    bll_ast_calculator->setVariableValue("A", 0);
-    bll_ast_calculator->setVariableValue("C", 0);
-    bll_ast_calculator->setVariableValue("B", 0);
-    std::cout << bll_ast_calculator->calculate();
+    std::unique_ptr<BllAstTruthTableComputer> bll_ast_truth_table_computer = std::make_unique<BllAstTruthTableComputer>();
+
+    auto tt = bll_ast_truth_table_computer->computeTruthTable(bll_ast_calculator.get(), root.get());
+
+    std::cout << "Truth Table:\n" << tt->toString() << "\n";
+
     return 0;
 }

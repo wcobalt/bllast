@@ -9,6 +9,8 @@
 #include <memory>
 #include <vector>
 #include "BllAstOperator.h"
+#include "TextCanvas.h"
+#include "TextCanvasUtils.h"
 
 namespace bllast {
     class BllAstNode {
@@ -28,10 +30,8 @@ namespace bllast {
 
         unsigned findDepth(const BllAstNode* node, unsigned depth) const;
 
-        void placeNodeOnCanvas(char** canvas, const BllAstNode* node, unsigned currentDepth, unsigned currentOffset,
-                               unsigned width, unsigned height) const;
-
-        void placeTextOnCanvas(char** canvas, std::string_view text, unsigned width, unsigned height, unsigned x, unsigned y) const;
+        void placeNodeOnCanvas(textcanvas::TextCanvas& canvas, const BllAstNode *node, textcanvas::TextCanvasUtils& textCanvasUtils,
+                               unsigned currentDepth, unsigned currentOffset) const;
     public:
         BllAstNode(BllAstNodeType type, std::string variableName, bool value, const BllAstOperator* op,
                    std::vector<std::unique_ptr<BllAstNode>> &children);
