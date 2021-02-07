@@ -2,6 +2,7 @@
 
 #include "BllAstMaker.h"
 #include "BllAstPnfChecker.h"
+#include "BllAstCalculator.h"
 
 using namespace bllast;
 
@@ -14,29 +15,70 @@ const static char *EQUIVALENCE_OP_CODE = "equv";
 
 using Arity = BllAstOperator::Arity;
 
-std::unique_ptr<BllAstPnfChecker> make_bll_ast_pnf_checker() {
+int main() {
+    std::unique_ptr<BllAstMaker> bll_ast_maker = std::make_unique<BllAstMaker>();
+
+    auto negation_operator = std::make_unique<BllAstOperator>(Arity::UNARY, "!", NEGATION_OP_CODE);
+    auto implication_operator = std::make_unique<BllAstOperator>(Arity::BINARY, "->", IMPLICATION_OP_CODE);
+    auto disjunction_operator = std::make_unique<BllAstOperator>(Arity::BINARY, "\\/", DISJUNCTION_OP_CODE);
+    auto conjunction_operator = std::make_unique<BllAstOperator>(Arity::BINARY, "/\\", CONJUNCTION_OP_CODE);
+    auto equivalence_operator = std::make_unique<BllAstOperator>(Arity::BINARY, "~", EQUIVALENCE_OP_CODE);
+
+    bll_ast_maker->extendWithOperator(negation_operator.get());
+    bll_ast_maker->extendWithOperator(implication_operator.get());
+    bll_ast_maker->extendWithOperator(disjunction_operator.get());
+    bll_ast_maker->extendWithOperator(conjunction_operator.get());
+    bll_ast_maker->extendWithOperator(equivalence_operator.get());
+
     std::unique_ptr<BllAstPnfChecker> bll_ast_pnf_checker = std::make_unique<BllAstPnfChecker>();
 
     bll_ast_pnf_checker->setOpCodes(DISJUNCTION_OP_CODE, CONJUNCTION_OP_CODE, NEGATION_OP_CODE);
 
-    return bll_ast_pnf_checker;
-}
+    std::unique_ptr<BllAstCalculator> bll_ast_calculator = std::make_unique<BllAstCalculator>();
 
-std::unique_ptr<BllAstMaker> make_bll_ast_maker() {
-    std::unique_ptr<BllAstMaker> bll_ast_maker = std::make_unique<BllAstMaker>();
+    auto negation_operation = std::make_unique<BllAstCalculator::Operation>(negation_operator.get(),
+        [](const std::vector<bool>& operands) -> bool {
+            return !operands[0];
+        }
+    );
 
-    bll_ast_maker->extendWithOperator(std::make_unique<BllAstOperator>(Arity::UNARY, "!", NEGATION_OP_CODE));
-    bll_ast_maker->extendWithOperator(std::make_unique<BllAstOperator>(Arity::BINARY, "->", IMPLICATION_OP_CODE));
-    bll_ast_maker->extendWithOperator(std::make_unique<BllAstOperator>(Arity::BINARY, "\\/", DISJUNCTION_OP_CODE));
-    bll_ast_maker->extendWithOperator(std::make_unique<BllAstOperator>(Arity::BINARY, "/\\", CONJUNCTION_OP_CODE));
-    bll_ast_maker->extendWithOperator(std::make_unique<BllAstOperator>(Arity::BINARY, "~", EQUIVALENCE_OP_CODE));
+    auto implication_operation = std::make_unique<BllAstCalculator::Operation>(implication_operator.get(),
+        [](const std::vector<bool>& operands) -> bool {
+            bool a = operands[0], b = operands[1];
 
-    return bll_ast_maker;
-}
+            return !(a && !b);
+        }
+    );
 
-int main() {
-    std::unique_ptr<BllAstMaker> bll_ast_maker = make_bll_ast_maker();
-    std::unique_ptr<BllAstPnfChecker> bll_ast_pnf_checker = make_bll_ast_pnf_checker();
+    auto disjunction_operation = std::make_unique<BllAstCalculator::Operation>(disjunction_operator.get(),
+        [](const std::vector<bool>& operands) -> bool {
+            bool a = operands[0], b = operands[1];
+
+            return a || b;
+        }
+    );
+
+    auto conjunction_operation = std::make_unique<BllAstCalculator::Operation>(conjunction_operator.get(),
+        [](const std::vector<bool>& operands) -> bool {
+            bool a = operands[0], b = operands[1];
+
+            return a && b;
+        }
+    );
+
+    auto equivalence_operation = std::make_unique<BllAstCalculator::Operation>(equivalence_operator.get(),
+        [](const std::vector<bool>& operands) -> bool {
+            bool a = operands[0], b = operands[1];
+
+            return a == b;
+        }
+    );
+
+    bll_ast_calculator->extendsWithOperation(negation_operation.get());
+    bll_ast_calculator->extendsWithOperation(implication_operation.get());
+    bll_ast_calculator->extendsWithOperation(disjunction_operation.get());
+    bll_ast_calculator->extendsWithOperation(conjunction_operation.get());
+    bll_ast_calculator->extendsWithOperation(equivalence_operation.get());
 
     std::string expression = "((!A)\\/(B/\\C))";//((A\/((!B)\/C))/\((B\/((!C)\/A))/\(B\/((C)\/A)))), ((A)\/((!A)\/B))
     std::string entered;
@@ -58,5 +100,10 @@ int main() {
     std::cout << "Is PCNF: " << bll_ast_pnf_checker->isPerfectConjunctiveNormalForm(root.get()) << "\n";
     std::cout << "Is PDNF: " << bll_ast_pnf_checker->isPerfectDisjunctiveNormalForm(root.get()) << "\n";
 
+    bll_ast_calculator->putBllAst(root.get());
+    bll_ast_calculator->setVariableValue("A", 0);
+    bll_ast_calculator->setVariableValue("C", 0);
+    bll_ast_calculator->setVariableValue("B", 0);
+    std::cout << bll_ast_calculator->calculate();
     return 0;
 }
