@@ -5,8 +5,10 @@
 #include "BllAstCalculator.h"
 #include "BllAstTruthTableComputer.h"
 #include "BllAstConverterToPnf.h"
+#include "ui/UiParametersParser.h"
 
 using namespace bllast;
+using namespace ui;
 
 const static char* USE_TEST_EXPRESSION = "test";
 const static char *NEGATION_OP_CODE = "nega";
@@ -120,6 +122,14 @@ int main() {
     std::cout << "PCNF: " << pcnf->toFormulaInStringForm() << "\n";
     std::cout << "PCNF TT: " << bll_ast_truth_table_computer->
         computeTruthTable(bll_ast_calculator.get(), pcnf.get())->toString() << "\n";
+
+    UiParameter intp{"int", {"--int"}, UiParameter::Type::INT};
+    UiParameter flagp{"flag", {"--flag"}, UiParameter::Type::FLAG};
+    UiParameter stringp{"string", {"--string"}, UiParameter::Type::STRING};
+
+    UiParametersParser parser;
+
+    auto v = parser.parse("--int=1 --flag --string=asad", {&intp, &flagp, &stringp});
 
     return 0;
 }
