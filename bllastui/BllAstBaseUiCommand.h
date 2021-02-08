@@ -15,8 +15,6 @@
 
 namespace bllast {
     class BllAstBaseUiCommand : public ui::UiCommand {
-        inline static const char* DEFAULT_AST_TITLE = "Abstract Syntax Tree:";
-        inline static const char* DEFAULT_TT_TITLE = "Truth Table:";
         inline static const char* SIMPLIFICATION_LEVEL_0 = "s0";
         inline static const char* SIMPLIFICATION_LEVEL_1 = "s1";
         inline static const char* SIMPLIFICATION_LEVEL_2 = "s2";
@@ -46,6 +44,9 @@ namespace bllast {
         BllAstBaseUiCommand(BllAstCalculator *bllAstCalculator,
                             const BllAstTruthTableComputer *truthTableComputer);
     protected:
+        inline static const char* DEFAULT_AST_TITLE = "Abstract Syntax Tree:";
+        inline static const char* DEFAULT_TT_TITLE = "Truth Table:";
+
         const ui::UiParameterInstance* findParameterInstance(const std::vector<std::unique_ptr<ui::UiParameterInstance>>& instances,
                 const ui::UiParameter* parameter) const;
 

@@ -9,6 +9,7 @@
 #include "ui/UiMainLoop.h"
 #include "bllastui/BllAstCheckUiCommand.h"
 #include "bllastui/BllAstExitUiCommand.h"
+#include "bllastui/BllAstTransformUiCommand.h"
 
 using namespace bllast;
 using namespace ui;
@@ -95,15 +96,18 @@ int main() {
             conjunction_operator.get(), negation_operator.get());
 
     //((!A)\/(B/\C)), ((A\/((!B)\/C))/\((B\/((!C)\/A))/\(B\/((C)\/A)))), ((A)\/((!A)\/B))
+    //transform ((!A)\/(B/\C)) -t -a -T -A -d -c
 
     std::unique_ptr<UiCommand> checkCommand = std::make_unique<BllAstCheckUiCommand>(bll_ast_calculator.get(),
             bll_ast_truth_table_computer.get(), bll_ast_pnf_checker.get(), bll_ast_parser.get());
+    std::unique_ptr<UiCommand> transformCommand = std::make_unique<BllAstTransformUiCommand>(bll_ast_calculator.get(),
+            bll_ast_truth_table_computer.get(), bll_ast_converter_to_pnf.get(), bll_ast_parser.get());
     std::unique_ptr<UiCommand> exitCommand = std::make_unique<BllAstExitUiCommand>();
 
     std::unique_ptr<UiMainLoop> main_loop = std::make_unique<UiMainLoop>(std::cin, std::cout);
 
     main_loop->extendWithCommand(checkCommand.get());
-    //main_loop->extendWithCommand(transformCommand);
+    main_loop->extendWithCommand(transformCommand.get());
     main_loop->extendWithCommand(exitCommand.get());
 
     main_loop->start();
