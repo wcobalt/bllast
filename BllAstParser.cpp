@@ -3,28 +3,28 @@
 //
 #include <iostream>
 #include <cmath>
-#include "BllAstMaker.h"
+#include "BllAstParser.h"
 
 using namespace bllast;
 
-void BllAstMaker::extendWithOperator(const BllAstOperator *bllOperator) {
+void BllAstParser::extendWithOperator(const BllAstOperator *bllOperator) {
     operators.emplace_back(bllOperator);
 }
 
-bool BllAstMaker::checkVariable(std::string_view variable) const {
+bool BllAstParser::checkVariable(std::string_view variable) const {
     return variable.size() == 1 && (variable[0] >= MINIMAL_ALLOWED_AS_VARNAME_CHAR
                                     && variable[0] <= MAXIMAL_ALLOWED_AS_VARNAME_CHAR);
 }
 
-bool BllAstMaker::checkLiteral(std::string_view literal) const {
+bool BllAstParser::checkLiteral(std::string_view literal) const {
     return literal == TRUE_LITERAL || literal == FALSE_LITERAL;
 }
 
-bool BllAstMaker::checkValue(std::string_view value) const {
+bool BllAstParser::checkValue(std::string_view value) const {
     return checkVariable(value) || checkLiteral(value);
 }
 
-bool BllAstMaker::checkParenthesisedExpression(std::string_view expression) const {
+bool BllAstParser::checkParenthesisedExpression(std::string_view expression) const {
     if (expression.length() >= 2 && expression[0] == OPENING_PARENTHESIS
         && expression[expression.length() - 1] == CLOSING_PARENTHESIS) {
         long balance = 0;
@@ -46,7 +46,7 @@ bool BllAstMaker::checkParenthesisedExpression(std::string_view expression) cons
         return false;
 }
 
-BllAstMaker::Starting BllAstMaker::checkExpression(std::string_view expression) const {
+BllAstParser::Starting BllAstParser::checkExpression(std::string_view expression) const {
     if (!expression.empty()) {
         if (checkValue(expression) || checkParenthesisedExpression(expression))
             return Starting::FULL_MATCH;
@@ -57,7 +57,7 @@ BllAstMaker::Starting BllAstMaker::checkExpression(std::string_view expression) 
     return Starting::NO_WAY;
 }
 
-bool BllAstMaker::checkParenthesisBalance(std::string_view expression) const {
+bool BllAstParser::checkParenthesisBalance(std::string_view expression) const {
     long balance = 0;
 
     for (char ch : expression) {
@@ -70,7 +70,7 @@ bool BllAstMaker::checkParenthesisBalance(std::string_view expression) const {
     return balance == 0;
 }
 
-bool BllAstMaker::parseLiteral(std::string_view literal) const {
+bool BllAstParser::parseLiteral(std::string_view literal) const {
     if (literal == TRUE_LITERAL)
         return true;
     else if (literal == FALSE_LITERAL)
@@ -79,7 +79,7 @@ bool BllAstMaker::parseLiteral(std::string_view literal) const {
         throw std::runtime_error("Undefined literal");
 }
 
-std::unique_ptr<BllAstNode> BllAstMaker::parse(std::string_view expression) const {
+std::unique_ptr<BllAstNode> BllAstParser::parse(std::string_view expression) const {
     if (!expression.empty()) {
         bool parenthesisBalance = checkParenthesisBalance(expression);
 
@@ -90,7 +90,7 @@ std::unique_ptr<BllAstNode> BllAstMaker::parse(std::string_view expression) cons
     }
 }
 
-std::unique_ptr<BllAstNode> BllAstMaker::parseExpression(std::string_view expression) const {
+std::unique_ptr<BllAstNode> BllAstParser::parseExpression(std::string_view expression) const {
     if (checkExpression(expression) == Starting::FULL_MATCH) {
         if (expression.empty())
             throw std::runtime_error("Expression cannot be empty");
@@ -107,7 +107,7 @@ std::unique_ptr<BllAstNode> BllAstMaker::parseExpression(std::string_view expres
         throw std::invalid_argument("Invalid expression: wrong syntax at " + findLocalityInExpression(expression));
 }
 
-std::unique_ptr<BllAstNode> BllAstMaker::parseValue(std::string_view value) const {
+std::unique_ptr<BllAstNode> BllAstParser::parseValue(std::string_view value) const {
     std::vector<std::unique_ptr<BllAstNode>> children;
 
     if (checkLiteral(value)) {
@@ -120,7 +120,7 @@ std::unique_ptr<BllAstNode> BllAstMaker::parseValue(std::string_view value) cons
         throw std::runtime_error("Undefined type of value");
 }
 
-std::unique_ptr<BllAstNode> BllAstMaker::parseParenthesisedExpression(std::string_view parenthesisedExpression) const {
+std::unique_ptr<BllAstNode> BllAstParser::parseParenthesisedExpression(std::string_view parenthesisedExpression) const {
     //get rid of ( and )
     std::string_view expression = parenthesisedExpression.substr(1);
     expression.remove_suffix(1);
@@ -138,11 +138,11 @@ std::unique_ptr<BllAstNode> BllAstMaker::parseParenthesisedExpression(std::strin
         throw std::invalid_argument("Invalid expression: parenthesised expression cannot be empty");
 }
 
-std::string BllAstMaker::findLocalityInExpression(std::string_view expression) const {
+std::string BllAstParser::findLocalityInExpression(std::string_view expression) const {
     return '"' + std::string(expression.substr(0, std::min(expression.length(), EXPR_ERR_NEAR_SIZE))) + '"'; //double quotes are bad i guess
 }
 
-std::unique_ptr<BllAstNode> BllAstMaker::parseOperators(std::string_view expression) const {
+std::unique_ptr<BllAstNode> BllAstParser::parseOperators(std::string_view expression) const {
     std::vector<std::unique_ptr<BllAstNode>> children;
     BllAstOperator::Arity arity;
     std::unique_ptr<UnaryOperatorBaseParsingResult> result = std::make_unique<UnaryOperatorBaseParsingResult>();
@@ -189,7 +189,7 @@ std::unique_ptr<BllAstNode> BllAstMaker::parseOperators(std::string_view express
     return std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::OPERATOR, "", false, bllOperator, children);
 }
 
-std::unique_ptr<BllAstMaker::UnaryOperatorBaseParsingResult> BllAstMaker::parseUnaryOperatorBase(std::string_view expression) const {
+std::unique_ptr<BllAstParser::UnaryOperatorBaseParsingResult> BllAstParser::parseUnaryOperatorBase(std::string_view expression) const {
     std::unique_ptr<UnaryOperatorBaseParsingResult> result = std::make_unique<UnaryOperatorBaseParsingResult>();
 
     for (size_t i = 0; i < expression.length(); ++i) {
@@ -210,7 +210,7 @@ std::unique_ptr<BllAstMaker::UnaryOperatorBaseParsingResult> BllAstMaker::parseU
     return result;
 }
 
-const BllAstOperator* BllAstMaker::checkOperator(std::string_view representation, BllAstOperator::Arity arity) const {
+const BllAstOperator* BllAstParser::checkOperator(std::string_view representation, BllAstOperator::Arity arity) const {
     for (const auto& op : operators) {
         if (op->getRepresentation() == representation) {
             if (op->getArity() != arity)

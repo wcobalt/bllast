@@ -1,14 +1,19 @@
 #include <iostream>
 
-#include "BllAstMaker.h"
+#include "BllAstParser.h"
 #include "BllAstPnfChecker.h"
 #include "BllAstCalculator.h"
 #include "BllAstTruthTableComputer.h"
 #include "BllAstConverterToPnf.h"
+#include "ui/UiParametersParser.h"
+#include "ui/UiMainLoop.h"
+#include "bllastui/BllAstCheckUiCommand.h"
+#include "bllastui/BllAstExitUiCommand.h"
+#include "bllastui/BllAstTransformUiCommand.h"
 
 using namespace bllast;
+using namespace ui;
 
-const static char* USE_TEST_EXPRESSION = "test";
 const static char *NEGATION_OP_CODE = "nega";
 const static char *IMPLICATION_OP_CODE = "impl";
 const static char *DISJUNCTION_OP_CODE = "disj";
@@ -20,7 +25,7 @@ using Arity = BllAstOperator::Arity;
 //todo make more intensive use of references
 
 int main() {
-    std::unique_ptr<BllAstMaker> bll_ast_maker = std::make_unique<BllAstMaker>();
+    std::unique_ptr<BllAstParser> bll_ast_parser = std::make_unique<BllAstParser>();
 
     auto negation_operator = std::make_unique<BllAstOperator>(Arity::UNARY, "!", NEGATION_OP_CODE);
     auto implication_operator = std::make_unique<BllAstOperator>(Arity::BINARY, "->", IMPLICATION_OP_CODE);
@@ -28,11 +33,11 @@ int main() {
     auto conjunction_operator = std::make_unique<BllAstOperator>(Arity::BINARY, "/\\", CONJUNCTION_OP_CODE);
     auto equivalence_operator = std::make_unique<BllAstOperator>(Arity::BINARY, "~", EQUIVALENCE_OP_CODE);
 
-    bll_ast_maker->extendWithOperator(negation_operator.get());
-    bll_ast_maker->extendWithOperator(implication_operator.get());
-    bll_ast_maker->extendWithOperator(disjunction_operator.get());
-    bll_ast_maker->extendWithOperator(conjunction_operator.get());
-    bll_ast_maker->extendWithOperator(equivalence_operator.get());
+    bll_ast_parser->extendWithOperator(negation_operator.get());
+    bll_ast_parser->extendWithOperator(implication_operator.get());
+    bll_ast_parser->extendWithOperator(disjunction_operator.get());
+    bll_ast_parser->extendWithOperator(conjunction_operator.get());
+    bll_ast_parser->extendWithOperator(equivalence_operator.get());
 
     std::unique_ptr<BllAstPnfChecker> bll_ast_pnf_checker = std::make_unique<BllAstPnfChecker>();
 
@@ -84,42 +89,28 @@ int main() {
     bll_ast_calculator->extendsWithOperation(conjunction_operation.get());
     bll_ast_calculator->extendsWithOperation(equivalence_operation.get());
 
-    std::string expression = "((!A)\\/(B/\\C))";//((A\/((!B)\/C))/\((B\/((!C)\/A))/\(B\/((C)\/A)))), ((A)\/((!A)\/B))
-    std::string entered;
-
-    std::cout << "Welcome to Bllast! Enter expression to test it on conforming PCNF and PDNF. Enter `test` to use default expression.\n";
-    std::cout << "Expression: ";
-
-    std::cin >> entered;
-
-    if (entered != USE_TEST_EXPRESSION)
-        expression = entered;
-
-    std::cout << "Using expression: " << expression << "\n\n";
-
-    std::unique_ptr<BllAstNode> root = bll_ast_maker->parse(expression);
-
-    std::cout << "Abstract Syntax Tree: \n" << root->toAstInStringForm();
-
-    std::cout << "Is PCNF: " << bll_ast_pnf_checker->isPerfectConjunctiveNormalForm(root.get()) << "\n";
-    std::cout << "Is PDNF: " << bll_ast_pnf_checker->isPerfectDisjunctiveNormalForm(root.get()) << "\n";
-
     std::unique_ptr<BllAstTruthTableComputer> bll_ast_truth_table_computer = std::make_unique<BllAstTruthTableComputer>();
-
-    auto tt = bll_ast_truth_table_computer->computeTruthTable(bll_ast_calculator.get(), root.get());
-
-    std::cout << "Truth Table:\n" << tt->toString() << "\n";
-    std::cout << "The serialized expression: " << root->toFormulaInStringForm();
 
     std::unique_ptr<BllAstConverterToPnf> bll_ast_converter_to_pnf = std::make_unique<BllAstConverterToPnf>(
             bll_ast_calculator.get(), bll_ast_truth_table_computer.get(), disjunction_operator.get(),
             conjunction_operator.get(), negation_operator.get());
 
-    std::unique_ptr<BllAstNode> pcnf = bll_ast_converter_to_pnf->transformToPdnf(root.get());
+    //((!A)\/(B/\C)), ((A\/((!B)\/C))/\((B\/((!C)\/A))/\(B\/((C)\/A)))), ((A)\/((!A)\/B))
+    //transform ((!A)\/(B/\C)) -t -a -T -A -d -c
+    //transform ((!Z)\/(X/\Y)) --print-tt --print-ast --print-new-ast --print-new-tt --pcnf --pdnf
+    std::unique_ptr<UiCommand> checkCommand = std::make_unique<BllAstCheckUiCommand>(bll_ast_calculator.get(),
+            bll_ast_truth_table_computer.get(), bll_ast_pnf_checker.get(), bll_ast_parser.get());
+    std::unique_ptr<UiCommand> transformCommand = std::make_unique<BllAstTransformUiCommand>(bll_ast_calculator.get(),
+            bll_ast_truth_table_computer.get(), bll_ast_converter_to_pnf.get(), bll_ast_parser.get());
+    std::unique_ptr<UiCommand> exitCommand = std::make_unique<BllAstExitUiCommand>();
 
-    std::cout << "PCNF: " << pcnf->toFormulaInStringForm() << "\n";
-    std::cout << "PCNF TT: " << bll_ast_truth_table_computer->
-        computeTruthTable(bll_ast_calculator.get(), pcnf.get())->toString() << "\n";
+    std::unique_ptr<UiMainLoop> main_loop = std::make_unique<UiMainLoop>(std::cin, std::cout);
+
+    main_loop->extendWithCommand(checkCommand.get());
+    main_loop->extendWithCommand(transformCommand.get());
+    main_loop->extendWithCommand(exitCommand.get());
+
+    main_loop->start();
 
     return 0;
 }

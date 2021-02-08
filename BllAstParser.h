@@ -2,8 +2,8 @@
 // Created by wcobalt on 2/6/21.
 //
 
-#ifndef INC_1_BLLASTMAKER_H
-#define INC_1_BLLASTMAKER_H
+#ifndef INC_1_BLLASTPARSER_H
+#define INC_1_BLLASTPARSER_H
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "BllAstNode.h"
 
 namespace bllast {
-    class BllAstMaker {
+    class BllAstParser {
     public:
         virtual void extendWithOperator(const BllAstOperator *bllOperator);
 
@@ -69,4 +69,4 @@ namespace bllast {
 }
 
 
-#endif //INC_1_BLLASTMAKER_H
+#endif //INC_1_BLLASTPARSER_H

@@ -48,23 +48,26 @@ std::unique_ptr<BllAstNode> BllAstConverterToPnf::convertToPnf(const BllAstNode 
 std::unique_ptr<BllAstNode>
 BllAstConverterToPnf::createMultiOperatorNode(std::vector<std::unique_ptr<BllAstNode>>& nodes,
                                               const BllAstOperator *op) const {
-    size_t operatorsCount = nodes.size() - 1;
+    if (!nodes.empty()) {
+        size_t operatorsCount = nodes.size() - 1;
 
-    std::unique_ptr<BllAstNode> currentNode = std::move(nodes[operatorsCount]);
-    nodes.erase(nodes.end() - 1);
-
-    for (size_t o = 0; o < operatorsCount; ++o) {
-        std::vector<std::unique_ptr<BllAstNode>> children;
-        children.emplace_back(std::move(nodes[nodes.size() - 1]));
-        children.emplace_back(std::move(currentNode));
-
+        std::unique_ptr<BllAstNode> currentNode = std::move(nodes[operatorsCount]);
         nodes.erase(nodes.end() - 1);
 
-        currentNode = std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::OPERATOR,
-                "", false, op, children);
-    }
+        for (size_t o = 0; o < operatorsCount; ++o) {
+            std::vector<std::unique_ptr<BllAstNode>> children;
+            children.emplace_back(std::move(nodes[nodes.size() - 1]));
+            children.emplace_back(std::move(currentNode));
 
-    return currentNode;
+            nodes.erase(nodes.end() - 1);
+
+            currentNode = std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::OPERATOR,
+                                                       "", false, op, children);
+        }
+
+        return currentNode;
+    } else
+        return nullptr;
 }
 
 std::unique_ptr<BllAstNode>
