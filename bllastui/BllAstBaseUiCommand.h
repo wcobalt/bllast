@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include "../ui/UiCommand.h"
+#include "../ui/UiParameter.h"
 #include "../ui/UiParameterInstance.h"
 #include "../BllAstNode.h"
 #include "../BllAstTruthTableComputer.h"
@@ -24,19 +25,18 @@ namespace bllast {
         BllAstCalculator *bllAstCalculator;
 
         const BllAstTruthTableComputer* truthTableComputer;
+
+        std::unique_ptr<ui::UiParameter> printAstParameter, printTruthTableParameter, simplifyParameter;
     public:
         class StandardFormParseResult {
-            inline static const char SPACE = ' ';
+            inline static const char* STANDARD_FORM_PATTERN = R"-(^\s*([^\s]+)\s+([^\s]+)\s+(.*+)\s*$)-";
 
-            std::string commandName, subCommandName, expression, paramsString;
+            std::string commandName, expression, paramsString;
 
-            void putValue(std::string value, uint8_t state);
         public:
             explicit StandardFormParseResult(std::string_view command);
 
             const std::string &getCommandName() const;
-
-            const std::string &getSubCommandName() const;
 
             const std::string &getExpression() const;
 
@@ -46,7 +46,6 @@ namespace bllast {
         BllAstBaseUiCommand(BllAstCalculator *bllAstCalculator,
                             const BllAstTruthTableComputer *truthTableComputer);
     protected:
-
         const ui::UiParameterInstance* findParameterInstance(const std::vector<std::unique_ptr<ui::UiParameterInstance>>& instances,
                 const ui::UiParameter* parameter) const;
 
@@ -59,6 +58,13 @@ namespace bllast {
         std::string printTruthTable(const BllAstNode* root, std::string_view title) const;
 
         std::unique_ptr<BllAstNode> simplify(const BllAstNode* root, std::string_view simplificationLevel) const;
+
+    public:
+        const ui::UiParameter &getPrintAstParameter() const;
+
+        const ui::UiParameter &getPrintTruthTableParameter() const;
+
+        const ui::UiParameter &getSimplifyParameter() const;
     };
 }
 

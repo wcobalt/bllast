@@ -2,6 +2,7 @@
 // Created by wcobalt on 2/8/21.
 //
 
+#include <regex>
 #include "BllAstBaseUiCommand.h"
 
 using namespace bllast;
@@ -9,7 +10,17 @@ using namespace ui;
 
 BllAstBaseUiCommand::BllAstBaseUiCommand(BllAstCalculator *bllAstCalculator,
                                          const BllAstTruthTableComputer *truthTableComputer) : bllAstCalculator(
-        bllAstCalculator), truthTableComputer(truthTableComputer) {}
+        bllAstCalculator), truthTableComputer(truthTableComputer) {
+    //todo strings to consts
+    printAstParameter = std::move(std::make_unique<UiParameter>("print_ast",
+            std::vector<std::string>{"-a", "--print-ast"}, UiParameter::Type::FLAG));
+
+    printTruthTableParameter = std::move(std::make_unique<UiParameter>("print_tt",
+            std::vector<std::string>{"-t", "--print-tt"}, UiParameter::Type::FLAG));
+
+    simplifyParameter = std::move(std::make_unique<UiParameter>("simplify",
+            std::vector<std::string>{"-s", "--simplify"}, UiParameter::Type::STRING));
+}
 
 const UiParameterInstance *BllAstBaseUiCommand::findParameterInstance(
         const std::vector<std::unique_ptr<UiParameterInstance>> &instances,
@@ -43,54 +54,33 @@ BllAstBaseUiCommand::simplify(const BllAstNode *root, std::string_view simplific
     return std::unique_ptr<BllAstNode>();
 }
 
-BllAstBaseUiCommand::StandardFormParseResult::StandardFormParseResult(std::string_view command) {
-    uint8_t state = 0; //0 - reading com. name, 1 - reading subcom. name, 2 - reading expression, 3 - reading params list
-    std::string currentValue;
-
-    for (char c : command) {
-        if (c == SPACE) {
-            if (!currentValue.empty()) {
-                putValue(currentValue, state);
-
-                ++state;
-                currentValue.clear();
-            }
-
-        } else
-            currentValue += c;
-    }
+const UiParameter &BllAstBaseUiCommand::getPrintAstParameter() const {
+    return *printAstParameter;
 }
 
-void BllAstBaseUiCommand::StandardFormParseResult::putValue(std::string value, uint8_t state) {
-    switch (state) {
-        case 0:
-            commandName = std::move(value);
+const UiParameter &BllAstBaseUiCommand::getPrintTruthTableParameter() const {
+    return *printTruthTableParameter;
+}
 
-            break;
+const UiParameter &BllAstBaseUiCommand::getSimplifyParameter() const {
+    return *simplifyParameter;
+}
 
-        case 1:
-            subCommandName = std::move(value);
+BllAstBaseUiCommand::StandardFormParseResult::StandardFormParseResult(std::string_view command) {
+    std::regex pattern(STANDARD_FORM_PATTERN);
+    std::cmatch match;
 
-            break;
+    std::regex_match(command.begin(), command.end(), match, pattern);
 
-        case 2:
-            expression = std::move(value);
-
-            break;
-
-        case 3:
-            paramsString = std::move(value);
-
-            break;
+    if (!match.empty()) {
+        commandName = match[1];
+        expression = match[2];
+        paramsString = match[3];
     }
 }
 
 const std::string &BllAstBaseUiCommand::StandardFormParseResult::getCommandName() const {
     return commandName;
-}
-
-const std::string &BllAstBaseUiCommand::StandardFormParseResult::getSubCommandName() const {
-    return subCommandName;
 }
 
 const std::string &BllAstBaseUiCommand::StandardFormParseResult::getExpression() const {
