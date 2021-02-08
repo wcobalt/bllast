@@ -12,6 +12,9 @@
 
 namespace ui {
     class UiParametersParser {
+        static inline const char NAME_VALUE_SEPARATOR = '=';
+        static inline const char SPACE = ' ';
+
         std::unique_ptr<UiParameterInstance> instanceParameter(
                 const std::initializer_list<const UiParameter *> availableParameters,
                 std::string_view name, std::string value) const;

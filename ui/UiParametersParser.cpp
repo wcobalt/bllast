@@ -20,13 +20,13 @@ UiParametersParser::parse(std::string_view paramString, std::initializer_list<co
         bool makeInstance = false;
 
         switch (c) {
-            case ' ': {
+            case SPACE: {
                 makeInstance = true;
 
                 break;
             }
 
-            case '=': {
+            case NAME_VALUE_SEPARATOR: {
                 awaitingName = false;
 
                 break;
@@ -40,7 +40,7 @@ UiParametersParser::parse(std::string_view paramString, std::initializer_list<co
             }
         }
 
-        if (makeInstance || (i == paramString.size() - 1 && !currentName.empty())) {
+        if ((makeInstance || i == paramString.size() - 1) && !currentName.empty()) {
             auto instance = instanceParameter(allowedParameters, currentName, currentValue);
 
             if (instance)

@@ -7,10 +7,10 @@
 
 #include <vector>
 #include <memory>
-#include "ui/UiCommand.h"
-#include "ui/UiParameterInstance.h"
-#include "BllAstNode.h"
-#include "BllAstTruthTableComputer.h"
+#include "../ui/UiCommand.h"
+#include "../ui/UiParameterInstance.h"
+#include "../BllAstNode.h"
+#include "../BllAstTruthTableComputer.h"
 
 namespace bllast {
     class BllAstBaseUiCommand : public ui::UiCommand {
@@ -22,9 +22,27 @@ namespace bllast {
         inline static const char* SIMPLIFICATION_LEVEL_3 = "s3";
 
         BllAstCalculator *bllAstCalculator;
+
         const BllAstTruthTableComputer* truthTableComputer;
-    protected:
     public:
+        class StandardFormParseResult {
+            inline static const char SPACE = ' ';
+
+            std::string commandName, subCommandName, expression, paramsString;
+
+            void putValue(std::string value, uint8_t state);
+        public:
+            explicit StandardFormParseResult(std::string_view command);
+
+            const std::string &getCommandName() const;
+
+            const std::string &getSubCommandName() const;
+
+            const std::string &getExpression() const;
+
+            const std::string &getParamsString() const;
+        };
+
         BllAstBaseUiCommand(BllAstCalculator *bllAstCalculator,
                             const BllAstTruthTableComputer *truthTableComputer);
     protected:

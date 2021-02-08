@@ -42,3 +42,61 @@ std::unique_ptr<BllAstNode>
 BllAstBaseUiCommand::simplify(const BllAstNode *root, std::string_view simplificationLevel) const {
     return std::unique_ptr<BllAstNode>();
 }
+
+BllAstBaseUiCommand::StandardFormParseResult::StandardFormParseResult(std::string_view command) {
+    uint8_t state = 0; //0 - reading com. name, 1 - reading subcom. name, 2 - reading expression, 3 - reading params list
+    std::string currentValue;
+
+    for (char c : command) {
+        if (c == SPACE) {
+            if (!currentValue.empty()) {
+                putValue(currentValue, state);
+
+                ++state;
+                currentValue.clear();
+            }
+
+        } else
+            currentValue += c;
+    }
+}
+
+void BllAstBaseUiCommand::StandardFormParseResult::putValue(std::string value, uint8_t state) {
+    switch (state) {
+        case 0:
+            commandName = std::move(value);
+
+            break;
+
+        case 1:
+            subCommandName = std::move(value);
+
+            break;
+
+        case 2:
+            expression = std::move(value);
+
+            break;
+
+        case 3:
+            paramsString = std::move(value);
+
+            break;
+    }
+}
+
+const std::string &BllAstBaseUiCommand::StandardFormParseResult::getCommandName() const {
+    return commandName;
+}
+
+const std::string &BllAstBaseUiCommand::StandardFormParseResult::getSubCommandName() const {
+    return subCommandName;
+}
+
+const std::string &BllAstBaseUiCommand::StandardFormParseResult::getExpression() const {
+    return expression;
+}
+
+const std::string &BllAstBaseUiCommand::StandardFormParseResult::getParamsString() const {
+    return paramsString;
+}
