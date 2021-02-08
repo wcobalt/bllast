@@ -30,6 +30,11 @@ namespace bllast {
 
         unsigned findDepth(const BllAstNode* node, unsigned depth) const;
 
+        std::string determineHead(const BllAstNode* node) const;
+
+        void placeOperatorOnCanvas(textcanvas::TextCanvas& canvas, textcanvas::TextCanvasUtils& textCanvasUtils,
+                const BllAstNode* node, unsigned currentDepth, unsigned currentOffset) const;
+
         void placeNodeOnCanvas(textcanvas::TextCanvas& canvas, const BllAstNode *node, textcanvas::TextCanvasUtils& textCanvasUtils,
                                unsigned currentDepth, unsigned currentOffset) const;
 
