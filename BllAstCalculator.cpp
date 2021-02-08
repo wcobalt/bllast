@@ -31,8 +31,11 @@ void BllAstCalculator::putBllAst(const BllAstNode *bllAstNode) {
     extractVariableNames(root);
 }
 
-void BllAstCalculator::setVariableValue(std::string_view variableName, bool value) {
-    values.insert(std::make_pair(variableName, value));
+void BllAstCalculator::setVariableValue(const std::string& variableName, bool value) {
+    if (values.find(variableName) == values.end())
+        values.insert(std::make_pair(variableName, value));
+    else
+        values.at(variableName) = value;
 }
 
 void BllAstCalculator::resetValues() {

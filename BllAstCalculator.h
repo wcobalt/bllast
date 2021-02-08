@@ -26,7 +26,7 @@ namespace bllast {
 
         void putBllAst(const BllAstNode* bllAstNode);
 
-        void setVariableValue(std::string_view variableName, bool value);
+        void setVariableValue(const std::string& variableName, bool value);
 
         void resetValues();
 

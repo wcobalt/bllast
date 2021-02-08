@@ -4,8 +4,11 @@
 
 #include "BllAstNode.h"
 #include "BllAstOperator.h"
+#include "TextCanvas.h"
+#include "TextCanvasUtils.h"
 
 using namespace bllast;
+using namespace textcanvas;
 
 BllAstNode::BllAstNodeType BllAstNode::getType() const {
     return type;
@@ -19,7 +22,7 @@ const BllAstOperator *BllAstNode::getOp() const {
     return bllOperator;
 }
 
-std::vector<BllAstNode *> BllAstNode::getChildren() {//fixme i don't like the duplication
+std::vector<BllAstNode *> BllAstNode::getChildren() {//todo i don't like the duplication
     std::vector<BllAstNode*> result;
 
     for (auto& node_ptr : children)
@@ -43,94 +46,112 @@ std::string BllAstNode::toAstInStringForm(unsigned nodeWidth) const {
     size_t width = (1ul << depth) * nodeWidth;
     size_t height = (depth + 1) * 2 - 1;
 
-    char** buffer = new char*[height];
+    std::unique_ptr<TextCanvasUtils> textCanvasUtils = std::make_unique<TextCanvasUtils>();
+    TextCanvas canvas = textCanvasUtils->createCanvas(width, height, FILLER);
 
-    for (size_t y = 0; y < height; ++y) {
-        buffer[y] = new char[width];
+    placeNodeOnCanvas(canvas, this, *textCanvasUtils, 0, 0);
 
-        for (size_t x = 0; x < width; ++x)
-            buffer[y][x] = FILLER;
-    }
+    std::string result = textCanvasUtils->transform(canvas);
 
-    placeNodeOnCanvas(buffer, this, 0, 0, width, height);
-
-    std::string result;
-
-    for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x)
-            result += buffer[y][x];
-
-        delete[] buffer[y];
-
-        result += '\n';
-    }
-
-    delete[] buffer;
+    textCanvasUtils->deleteCanvas(canvas);
 
     return result;
 }
 
-void BllAstNode::placeTextOnCanvas(char **canvas, std::string_view text, unsigned width, unsigned height,
-                                                unsigned x, unsigned y) const {
+std::string BllAstNode::serialize(const BllAstNode *node) const {
+    switch (node->type) {
+        case BllAstNodeType::LITERAL:
+            return std::string(1, static_cast<char>('0' + node->getValue()));
 
-    if (y < height) {
-        for (size_t p = 0; p < text.length(); ++p) {
-            if (x + p < width)
-                canvas[y][x + p] = text[p];
-        }
+        case BllAstNodeType::VARIABLE:
+            return node->getVariableName();
+
+        case BllAstNodeType::OPERATOR:
+            switch (node->getOp()->getArity()) {
+                case BllAstOperator::Arity::UNARY:
+                    return '(' + node->getOp()->getRepresentation() + serialize(node->getChildren()[0]) + ')';
+
+                case BllAstOperator::Arity::BINARY:
+                    return '(' + serialize(node->getChildren()[0]) +
+                        node->getOp()->getRepresentation() + serialize(node->getChildren()[1]) + ')';
+
+                default:
+                    throw std::runtime_error("Unsupported arity");
+            }
+
+        default:
+            throw std::runtime_error("Undefined type of node");
     }
 }
 
-void BllAstNode::placeNodeOnCanvas(char **canvas, const BllAstNode *node,
-                                                unsigned currentDepth, unsigned currentOffset,
-                                                unsigned width, unsigned height) const {
-    unsigned cellSize = (width / (1ul << currentDepth));
-    unsigned y = currentDepth * 2;
+std::string BllAstNode::toFormulaInStringForm() const {
+    return serialize(this);
+}
 
-    std::string head;
-
+std::string BllAstNode::determineHead(const BllAstNode *node) const {
     switch (node->type) {
-        case BllAstNodeType::OPERATOR: {
-            head = node->getOp()->getCode();
-
-            size_t n = currentOffset * 2;
-
-            unsigned center = (currentOffset * cellSize + cellSize / 2);
-            unsigned nextLevelCellSize = (width / (1ul << (currentDepth + 1)));
-            unsigned nextLevelY = y + 1;
-
-            for (size_t c = 0; c < node->getChildren().size(); ++c) {
-                const BllAstNode *child = node->getChildren()[c];
-
-                unsigned x = (n * nextLevelCellSize + nextLevelCellSize / 2);
-                unsigned branchX = center + (static_cast<long>(x) - center) / 2
-                                   - ((y != height - 3 && c == 0) ? 1 : 0); //3 is not a magic number, okay?
-
-                canvas[nextLevelY][branchX] = (c == 0 ? '/' : '\\');
-
-                placeNodeOnCanvas(canvas, child, currentDepth + 1, n++, width, height);
-            }
-
-            break;
-        }
+        case BllAstNodeType::OPERATOR:
+            return node->getOp()->getCode();
 
         case BllAstNodeType::VARIABLE:
-            head = node->getVariableName();
+            return node->getVariableName();
 
-            break;
         case BllAstNodeType::LITERAL:
-            head = static_cast<char>('0' + node->getValue());
-
-            break;
+            return std::string(1, static_cast<char>('0' + node->getValue()));
 
         default:
             throw std::runtime_error("Undefined type of a node");
     }
+}
+
+void BllAstNode::placeNodeOnCanvas(TextCanvas& canvas, const BllAstNode *node, TextCanvasUtils& textCanvasUtils,
+                                                unsigned currentDepth, unsigned currentOffset) const {
+    unsigned width = canvas.getWidth();
+    unsigned cellSize = (width / (1ul << currentDepth));
+    unsigned y = currentDepth * 2;
+
+    std::string head = determineHead(node);
+
+    if (node->type == BllAstNodeType::OPERATOR)
+        placeOperatorOnCanvas(canvas, textCanvasUtils, node, currentDepth, currentOffset);
 
     //it's supposed that NODE_WIDTH / 2 >= max head width
     unsigned x = (currentOffset * cellSize + (cellSize - head.length()) / 2);
 
-    placeTextOnCanvas(canvas, head, width, height, x, y);
+    textCanvasUtils.placeText(canvas, x, y, head);
+}
+
+void BllAstNode::placeOperatorOnCanvas(TextCanvas& canvas, TextCanvasUtils& textCanvasUtils, const BllAstNode* node,
+        unsigned currentDepth, unsigned currentOffset) const {
+    unsigned width = canvas.getWidth(), height = canvas.getHeight();
+    unsigned cellSize = (width / (1ul << currentDepth));
+    unsigned y = currentDepth * 2;
+
+    size_t n = currentOffset * 2;
+
+    unsigned center = (currentOffset * cellSize + cellSize / 2);
+    unsigned nextLevelCellSize = (width / (1ul << (currentDepth + 1)));
+    unsigned nextLevelY = y + 1;
+    unsigned halfNameWidth = node->getOp()->getCode().size() / 2;
+    unsigned leftSide = center - halfNameWidth, rightSide = center + halfNameWidth;
+
+    for (size_t c = 0; c < node->getChildren().size(); ++c) {
+        const BllAstNode *child = node->getChildren()[c];
+
+        unsigned x = (n * nextLevelCellSize + nextLevelCellSize / 2);
+        unsigned branchX = center + (static_cast<long>(x) - center) / 2
+                           - ((y != height - 3 && c == 0) ? 1 : 0); //3 is not a magic number, okay?
+        unsigned nextX = x + (c == 0 ? 1 : -1) * determineHead(child).size() / 2;
+
+        for (size_t xx = (c == 0 ? nextX : rightSide); xx < (c == 0 ? leftSide : nextX); ++xx) {
+            if (xx != branchX)
+                canvas.getPointer()[((xx < branchX) ^ (c == 0)) ? y : y + 1][xx] = '_';
+        }
+
+        canvas.getPointer()[nextLevelY][branchX] = (c == 0 ? '/' : '\\');
+
+        placeNodeOnCanvas(canvas, child, textCanvasUtils, currentDepth + 1, n++);
+    }
 }
 
 unsigned BllAstNode::findDepth(const BllAstNode* node, unsigned depth) const {
