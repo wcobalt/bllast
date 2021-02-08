@@ -98,10 +98,15 @@ int main() {
     //((!A)\/(B/\C)), ((A\/((!B)\/C))/\((B\/((!C)\/A))/\(B\/((C)\/A)))), ((A)\/((!A)\/B))
     //transform ((!A)\/(B/\C)) -t -a -T -A -d -c
     //transform ((!Z)\/(X/\Y)) --print-tt --print-ast --print-new-ast --print-new-tt --pcnf --pdnf
+    //transform ((!A)\/(B/\C)) -a -A -s=s3
+
+    std::unique_ptr<BllAstSimplifier> bll_ast_simplifier = std::make_unique<BllAstSimplifier>(bll_ast_calculator.get(),
+            CONJUNCTION_OP_CODE, DISJUNCTION_OP_CODE, NEGATION_OP_CODE);
+
     std::unique_ptr<UiCommand> checkCommand = std::make_unique<BllAstCheckUiCommand>(bll_ast_calculator.get(),
-            bll_ast_truth_table_computer.get(), bll_ast_pnf_checker.get(), bll_ast_parser.get());
+            bll_ast_truth_table_computer.get(), bll_ast_simplifier.get(), bll_ast_pnf_checker.get(), bll_ast_parser.get());
     std::unique_ptr<UiCommand> transformCommand = std::make_unique<BllAstTransformUiCommand>(bll_ast_calculator.get(),
-            bll_ast_truth_table_computer.get(), bll_ast_converter_to_pnf.get(), bll_ast_parser.get());
+            bll_ast_truth_table_computer.get(), bll_ast_simplifier.get(), bll_ast_converter_to_pnf.get(), bll_ast_parser.get());
     std::unique_ptr<UiCommand> exitCommand = std::make_unique<BllAstExitUiCommand>();
 
     std::unique_ptr<UiMainLoop> main_loop = std::make_unique<UiMainLoop>(std::cin, std::cout);

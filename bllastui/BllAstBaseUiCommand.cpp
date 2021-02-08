@@ -9,8 +9,10 @@ using namespace bllast;
 using namespace ui;
 
 BllAstBaseUiCommand::BllAstBaseUiCommand(BllAstCalculator *bllAstCalculator,
-                                         const BllAstTruthTableComputer *truthTableComputer) : bllAstCalculator(
-        bllAstCalculator), truthTableComputer(truthTableComputer) {
+                                         const BllAstTruthTableComputer *truthTableComputer,
+                                         const BllAstSimplifier* bllAstSimplifier)
+                                         : bllAstCalculator(bllAstCalculator), truthTableComputer(truthTableComputer),
+                                         bllAstSimplifier(bllAstSimplifier) {
     //todo strings to consts
     printAstParameter = std::move(std::make_unique<UiParameter>("print_ast",
             std::vector<std::string>{"-a", "--print-ast"}, UiParameter::Type::FLAG));
@@ -51,7 +53,24 @@ std::string BllAstBaseUiCommand::printTruthTable(const BllAstNode *root, std::st
 
 std::unique_ptr<BllAstNode>
 BllAstBaseUiCommand::simplify(const BllAstNode *root, std::string_view simplificationLevel) const {
-    return std::unique_ptr<BllAstNode>();
+    std::map<std::string, BllAstSimplifier::mask_type> masks;
+
+    {
+        BllAstSimplifier::mask_type temp_mask = 0;
+
+        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_0, temp_mask |= BllAstSimplifier::FULL_LITERAL_CALCULATION));
+        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_1, temp_mask |= BllAstSimplifier::REDUNDANT_DISJUNCTION_AND_CONJUNCTION));
+        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_2, temp_mask |= BllAstSimplifier::APRIORI_KNOWN_DISJUNCTION_AND_CONJUNCTION));
+        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_3, temp_mask | BllAstSimplifier::MULTIPLE_NEGATIONS));
+    }
+
+    auto it = masks.find(std::string(simplificationLevel));
+
+    if (it != masks.end()) {
+        BllAstSimplifier::mask_type mask = it->second;
+
+        return bllAstSimplifier->simplify(root, mask);
+    }
 }
 
 const UiParameter &BllAstBaseUiCommand::getPrintAstParameter() const {

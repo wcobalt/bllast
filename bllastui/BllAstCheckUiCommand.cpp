@@ -10,8 +10,9 @@ using namespace ui;
 
 BllAstCheckUiCommand::BllAstCheckUiCommand(BllAstCalculator *bllAstCalculator,
                                            const BllAstTruthTableComputer *truthTableComputer,
+                                           const BllAstSimplifier* bllAstSimplifier,
                                            const BllAstPnfChecker *bllAstPnfChecker, const BllAstParser *bllAstParser)
-        : BllAstBaseUiCommand(bllAstCalculator, truthTableComputer), bllAstPnfChecker(bllAstPnfChecker),
+        : BllAstBaseUiCommand(bllAstCalculator, truthTableComputer, bllAstSimplifier), bllAstPnfChecker(bllAstPnfChecker),
           bllAstParser(bllAstParser) {
     pcnfParameter = std::move(std::make_unique<UiParameter>("pcnf",
             std::vector<std::string>{"-c", "--pcnf"}, UiParameter::Type::FLAG));
@@ -49,7 +50,7 @@ UiCommand::Result bllast::BllAstCheckUiCommand::execute(std::string_view command
 
         const UiParameterInstance *simplifyParameter = findParameterInstance(parameters, &getSimplifyParameter());
         if (simplifyParameter) {
-            handledFormula = std::move(simplify(originalFormula.get(), simplifyParameter->getStringValue()));
+            handledFormula = std::move(simplify(handledFormula.get(), simplifyParameter->getStringValue()));
 
             buffer += "Simplified expression: " + handledFormula->toFormulaInStringForm() + '\n';
         }

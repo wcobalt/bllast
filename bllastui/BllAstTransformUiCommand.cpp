@@ -10,9 +10,11 @@ using namespace ui;
 
 BllAstTransformUiCommand::BllAstTransformUiCommand(BllAstCalculator *bllAstCalculator,
                                                    const BllAstTruthTableComputer *truthTableComputer,
+                                                   const BllAstSimplifier* bllAstSimplifier,
                                                    const BllAstConverterToPnf *bllAstConverterToPnf,
                                                    const BllAstParser *bllAstParser) : BllAstBaseUiCommand(
-        bllAstCalculator, truthTableComputer), bllAstConverterToPnf(bllAstConverterToPnf), bllAstParser(bllAstParser) {
+        bllAstCalculator, truthTableComputer, bllAstSimplifier), bllAstConverterToPnf(bllAstConverterToPnf),
+        bllAstParser(bllAstParser) {
     pcnfParameter = std::move(std::make_unique<UiParameter>("pcnf",
             std::vector<std::string>{"-c", "--pcnf"}, UiParameter::Type::FLAG));
 
@@ -55,7 +57,7 @@ UiCommand::Result BllAstTransformUiCommand::execute(std::string_view command) {
 
         const UiParameterInstance *simplifyParameter = findParameterInstance(parameters, &getSimplifyParameter());
         if (simplifyParameter) {
-            handledFormula = std::move(simplify(originalFormula.get(), simplifyParameter->getStringValue()));
+            handledFormula = std::move(simplify(handledFormula.get(), simplifyParameter->getStringValue()));
 
             buffer += "Simplified expression: " + handledFormula->toFormulaInStringForm() + '\n';
 

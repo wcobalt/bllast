@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "TextCanvas.h"
-#include "TextCanvasUtils.h"
+#include "textcanvas/TextCanvas.h"
+#include "textcanvas/TextCanvasUtils.h"
 
 using namespace textcanvas;
 

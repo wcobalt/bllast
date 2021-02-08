@@ -9,8 +9,8 @@
 #include <memory>
 #include <vector>
 #include "BllAstOperator.h"
-#include "TextCanvas.h"
-#include "TextCanvasUtils.h"
+#include "textcanvas/TextCanvas.h"
+#include "textcanvas/TextCanvasUtils.h"
 
 namespace bllast {
     class BllAstNode {
@@ -20,7 +20,8 @@ namespace bllast {
         };
     private:
         const static inline unsigned NODE_WIDTH = 3;
-        const static inline char LEFT_BRANCH = '/', RIGHT_BRANCH = '\\', FILLER = ' ';
+        const static inline char LEFT_BRANCH = '/', RIGHT_BRANCH = '\\', FILLER = ' ', HORIZONTAL_BRANCH = '_',
+        LEFT_PARENTHESIS = '(', RIGHT_PARENTHESIS = ')';
 
         BllAstNodeType type;
         std::string variableName;
@@ -48,6 +49,8 @@ namespace bllast {
         const std::string &getVariableName() const;
 
         const BllAstOperator* getOp() const;
+
+        std::unique_ptr<BllAstNode> clone() const;
 
         bool getValue() const;
 

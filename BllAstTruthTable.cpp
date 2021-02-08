@@ -6,8 +6,8 @@
 
 #include <utility>
 #include <cstring>
-#include "TextCanvas.h"
-#include "TextCanvasUtils.h"
+#include "textcanvas/TextCanvas.h"
+#include "textcanvas/TextCanvasUtils.h"
 
 using namespace textcanvas;
 using namespace bllast;
