@@ -18,6 +18,8 @@ namespace bllast {
 
         std::unique_ptr<ui::UiParameter> pcnfParameter, pdnfParameter, printNewAstParameter, printNewTruthTableParameter;
 
+        std::string printPnf(const BllAstNode *node, bool doPrintAst, bool doPrintTruthTable, std::string object) const;
+
         std::string printAstTruthTable(const BllAstNode* node, bool doPrintAst, bool doPrintTruthTable,
                 std::string object) const;
     public:

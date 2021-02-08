@@ -54,15 +54,17 @@ UiCommand::Result bllast::BllAstCheckUiCommand::execute(std::string_view command
             buffer += "Simplified expression: " + handledFormula->toFormulaInStringForm() + '\n';
         }
 
+        std::vector<std::string> bools = {"no", "yes"};
+
         if (findParameterInstance(parameters, pdnfParameter.get())) {
             buffer += std::string("Is PDNF: ") +
-                      static_cast<char>('0' + bllAstPnfChecker->isPerfectDisjunctiveNormalForm(handledFormula.get()));
+                      bools[bllAstPnfChecker->isPerfectDisjunctiveNormalForm(handledFormula.get())];
             buffer += '\n';
         }
 
         if (findParameterInstance(parameters, pcnfParameter.get())) {
             buffer += std::string("Is PCNF: ") +
-                      static_cast<char>('0' + bllAstPnfChecker->isPerfectConjunctiveNormalForm(handledFormula.get()));
+                      bools[bllAstPnfChecker->isPerfectConjunctiveNormalForm(handledFormula.get())];
             buffer += '\n';
         }
 

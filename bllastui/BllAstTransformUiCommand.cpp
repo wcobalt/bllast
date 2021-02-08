@@ -66,15 +66,13 @@ UiCommand::Result BllAstTransformUiCommand::execute(std::string_view command) {
         if (findParameterInstance(parameters, pdnfParameter.get())) {
             std::unique_ptr<BllAstNode> pdnf = bllAstConverterToPnf->transformToPdnf(handledFormula.get());
 
-            buffer += std::string("PDNF: ") + pdnf->toFormulaInStringForm() + '\n';
-            buffer += printAstTruthTable(pdnf.get(), doPrintNewAst, doPrintNewTruthTable, "PDNF");
+            buffer += printPnf(pdnf.get(), doPrintNewTruthTable, doPrintNewAst, "PDNF");
         }
 
         if (findParameterInstance(parameters, pcnfParameter.get())) {
             std::unique_ptr<BllAstNode> pcnf = bllAstConverterToPnf->transformToPcnf(handledFormula.get());
 
-            buffer += std::string("PCNF: ") + pcnf->toFormulaInStringForm() + '\n';
-            buffer += printAstTruthTable(pcnf.get(), doPrintNewAst, doPrintNewTruthTable, "PCNF");
+            buffer += printPnf(pcnf.get(), doPrintNewTruthTable, doPrintNewAst, "PCNF");
         }
 
         return {false, 0, buffer};
@@ -83,6 +81,19 @@ UiCommand::Result BllAstTransformUiCommand::execute(std::string_view command) {
 
         return {false, 1, buffer};
     }
+}
+
+std::string BllAstTransformUiCommand::printPnf(const BllAstNode *node, bool doPrintAst, bool doPrintTruthTable,
+                                               std::string object) const {
+    std::string buffer;
+
+    if (node) {
+        buffer += std::string(object + ": ") + node->toFormulaInStringForm() + '\n';
+        buffer += printAstTruthTable(node, doPrintAst, doPrintTruthTable, object);
+    } else
+        buffer += "It's impossible to make " + object + '\n';
+
+    return buffer;
 }
 
 std::string
