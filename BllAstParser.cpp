@@ -111,10 +111,10 @@ std::unique_ptr<BllAstNode> BllAstParser::parseValue(std::string_view value) con
     std::vector<std::unique_ptr<BllAstNode>> children;
 
     if (checkLiteral(value)) {
-        return std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::LITERAL,
+        return std::make_unique<BllAstNode>(BllAstNode::Type::LITERAL,
                                             "", parseLiteral(value), nullptr, children);
     } else if (checkVariable(value)) {
-        return std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::VARIABLE,
+        return std::make_unique<BllAstNode>(BllAstNode::Type::VARIABLE,
                                             std::string(value), false, nullptr, children);
     } else
         throw std::runtime_error("Undefined type of value");
@@ -186,7 +186,7 @@ std::unique_ptr<BllAstNode> BllAstParser::parseOperators(std::string_view expres
 
     const BllAstOperator* bllOperator = checkOperator(result->operatorRepresentation, arity);
 
-    return std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::OPERATOR, "", false, bllOperator, children);
+    return std::make_unique<BllAstNode>(BllAstNode::Type::OPERATOR, "", false, bllOperator, children);
 }
 
 std::unique_ptr<BllAstParser::UnaryOperatorBaseParsingResult> BllAstParser::parseUnaryOperatorBase(std::string_view expression) const {

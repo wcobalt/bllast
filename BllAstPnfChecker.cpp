@@ -79,7 +79,7 @@ bool BllAstPnfChecker::traverseFirstLayer(const std::vector<const BllAstNode *>&
     for (auto& child : nodes) {
         std::set<Variable> vars;
 
-        if (child->getType() == BllAstNode::BllAstNodeType::VARIABLE) {
+        if (child->getType() == BllAstNode::Type::VARIABLE) {
             traverseFourthLayer(child, vars, false);
 
             result.insertVarSet(vars);
@@ -112,7 +112,7 @@ bool BllAstPnfChecker::traverseSecondLayer(const BllAstNode *node, const BllAstP
                                            std::set<Variable> &set) const {
     //goto: (nego) - third layer, (value) - fourth layer, (slopcode) - second layer
     for (auto& child : node->getChildren()) {
-        if (child->getType() == BllAstNode::BllAstNodeType::VARIABLE)
+        if (child->getType() == BllAstNode::Type::VARIABLE)
             traverseFourthLayer(child, set, false);
         else {
             const std::string &opcode = child->getOp()->getCode();
@@ -140,7 +140,7 @@ bool BllAstPnfChecker::traverseThirdLayer(const BllAstNode *node, const BllAstPn
     //it's supposed that it has one and only one child
     const BllAstNode* child = node->getChildren()[0];
 
-    if (child->getType() == BllAstNode::BllAstNodeType::VARIABLE)
+    if (child->getType() == BllAstNode::Type::VARIABLE)
         traverseFourthLayer(child, subset, true);
     else
         return false;

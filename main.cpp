@@ -100,6 +100,9 @@ int main() {
     //transform ((!Z)\/(X/\Y)) --print-tt --print-ast --print-new-ast --print-new-tt --pcnf --pdnf
     //transform ((!A)\/(B/\C)) -a -A -s=s3
 
+    //transform (!(!(A))) -a -A -t -T -s=s3
+    //transform (A\/1) -a -A -t -T -s=s3
+
     std::unique_ptr<BllAstSimplifier> bll_ast_simplifier = std::make_unique<BllAstSimplifier>(bll_ast_calculator.get(),
             CONJUNCTION_OP_CODE, DISJUNCTION_OP_CODE, NEGATION_OP_CODE);
 

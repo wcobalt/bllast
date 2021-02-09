@@ -8,12 +8,12 @@ using namespace bllast;
 
 void BllAstCalculator::extractVariableNames(const BllAstNode *node) {
     switch (node->getType()) {
-        case BllAstNode::BllAstNodeType::VARIABLE:
+        case BllAstNode::Type::VARIABLE:
             extractedVariableNames.insert(node->getVariableName());
 
             break;
 
-        case BllAstNode::BllAstNodeType::OPERATOR:
+        case BllAstNode::Type::OPERATOR:
             for (const auto& child : node->getChildren())
                 extractVariableNames(child);
 
@@ -55,7 +55,7 @@ bool BllAstCalculator::calculate() const {
 
 bool BllAstCalculator::calculate(const BllAstNode *node) const {
     switch (node->getType()) {
-        case BllAstNode::BllAstNodeType::OPERATOR:{
+        case BllAstNode::Type::OPERATOR:{
             std::vector<bool> operands;
 
             for (const auto& child : node->getChildren())
@@ -64,10 +64,10 @@ bool BllAstCalculator::calculate(const BllAstNode *node) const {
             return operations.at(node->getOp()->getRepresentation())->compute(operands);
         }
 
-        case BllAstNode::BllAstNodeType::VARIABLE:
+        case BllAstNode::Type::VARIABLE:
             return values.at(node->getVariableName());
 
-        case BllAstNode::BllAstNodeType::LITERAL:
+        case BllAstNode::Type::LITERAL:
             return node->getValue();
 
         default:

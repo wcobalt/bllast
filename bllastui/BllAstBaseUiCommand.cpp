@@ -59,9 +59,9 @@ BllAstBaseUiCommand::simplify(const BllAstNode *root, std::string_view simplific
         BllAstSimplifier::mask_type temp_mask = 0;
 
         masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_0, temp_mask |= BllAstSimplifier::FULL_LITERAL_CALCULATION));
-        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_1, temp_mask |= BllAstSimplifier::REDUNDANT_DISJUNCTION_AND_CONJUNCTION));
-        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_2, temp_mask |= BllAstSimplifier::APRIORI_KNOWN_DISJUNCTION_AND_CONJUNCTION));
-        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_3, temp_mask | BllAstSimplifier::MULTIPLE_NEGATIONS));
+        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_1, temp_mask |= BllAstSimplifier::REDUNDANT_OPERATIONS_ELIMINATION));
+        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_2, temp_mask |= BllAstSimplifier::APRIORI_KNOWN_OPERATIONS_CALCULATION));
+        masks.emplace(std::make_pair(SIMPLIFICATION_LEVEL_3, temp_mask | BllAstSimplifier::MULTIPLE_NEGATIONS_ELIMINATION));
     }
 
     auto it = masks.find(std::string(simplificationLevel));
