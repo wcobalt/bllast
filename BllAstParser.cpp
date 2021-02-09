@@ -88,6 +88,8 @@ std::unique_ptr<BllAstNode> BllAstParser::parse(std::string_view expression) con
         } else
             throw std::invalid_argument("Invalid expression: unbalanced parenthesis");
     }
+
+    return nullptr;
 }
 
 std::unique_ptr<BllAstNode> BllAstParser::parseExpression(std::string_view expression) const {

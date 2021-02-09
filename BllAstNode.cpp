@@ -203,4 +203,6 @@ std::unique_ptr<BllAstNode> BllAstNode::extractChild(const BllAstNode *node) {
         if (child.get() == node)
             return std::move(child);
     }
+
+    return nullptr;
 }
