@@ -17,7 +17,7 @@ namespace bllast {
 
         static inline const char *CHECK_COMMAND_NAME = "check";
 
-        std::unique_ptr<ui::UiParameter> pcnfParameter, pdnfParameter;
+        std::unique_ptr<ui::UiParameter> pcnfParameter, pdnfParameter, cnfParameter, dnfParameter;
     public:
         BllAstCheckUiCommand(BllAstCalculator *bllAstCalculator, const BllAstTruthTableComputer *truthTableComputer,
                 const BllAstSimplifier* bllAstSimplifier, const BllAstPnfChecker *bllAstPnfChecker,

@@ -23,6 +23,20 @@ bool BllAstPnfChecker::isPerfectConjunctiveNormalForm(const BllAstNode *node) co
             {conjunctionOpCode, disjunctionOpCode, negationOpCode});
 }
 
+bool BllAstPnfChecker::isDisjunctiveNormalForm(const BllAstNode *node) const {
+    TraversalResult result{};
+
+    return traverseFirstLayer({node},
+            {disjunctionOpCode, conjunctionOpCode, negationOpCode}, result);
+}
+
+bool BllAstPnfChecker::isConjunctiveNormalForm(const BllAstNode *node) const {
+    TraversalResult result{};
+
+    return traverseFirstLayer({node},
+            {conjunctionOpCode, disjunctionOpCode, negationOpCode}, result);
+}
+
 bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllAstPnfChecker::Layout &layout) const {
     TraversalResult result{};
 

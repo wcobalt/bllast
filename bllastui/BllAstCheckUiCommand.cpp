@@ -19,6 +19,12 @@ BllAstCheckUiCommand::BllAstCheckUiCommand(BllAstCalculator *bllAstCalculator,
 
     pdnfParameter = std::move(std::make_unique<UiParameter>("pdnf",
             std::vector<std::string>{"-d", "--pdnf"}, UiParameter::Type::FLAG));
+
+    cnfParameter = std::move(std::make_unique<UiParameter>("cnf",
+            std::vector<std::string>{"-C", "--cnf"}, UiParameter::Type::FLAG));
+
+    dnfParameter = std::move(std::make_unique<UiParameter>("dnf",
+            std::vector<std::string>{"-D", "--dnf"}, UiParameter::Type::FLAG));
 }
 
 bool bllast::BllAstCheckUiCommand::check(std::string_view command) const {
@@ -36,7 +42,7 @@ UiCommand::Result bllast::BllAstCheckUiCommand::execute(std::string_view command
         std::vector<std::unique_ptr<UiParameterInstance>> parameters = uiParametersParser.parse(
                 parseResult.getParamsString(),
                 {&getPrintAstParameter(), &getPrintTruthTableParameter(), &getSimplifyParameter(),
-                 pcnfParameter.get(), pdnfParameter.get()});
+                 pcnfParameter.get(), pdnfParameter.get(), cnfParameter.get(), dnfParameter.get()});
 
         std::unique_ptr<BllAstNode> originalFormula = bllAstParser->parse(parseResult.getExpression());
 
@@ -68,6 +74,18 @@ UiCommand::Result bllast::BllAstCheckUiCommand::execute(std::string_view command
         if (findParameterInstance(parameters, pcnfParameter.get())) {
             buffer += std::string("Is PCNF: ") +
                       bools[bllAstPnfChecker->isPerfectConjunctiveNormalForm(handledFormula.get())];
+            buffer += '\n';
+        }
+
+        if (findParameterInstance(parameters, dnfParameter.get())) {
+            buffer += std::string("Is DNF: ") +
+                      bools[bllAstPnfChecker->isDisjunctiveNormalForm(handledFormula.get())];
+            buffer += '\n';
+        }
+
+        if (findParameterInstance(parameters, cnfParameter.get())) {
+            buffer += std::string("Is CNF: ") +
+                      bools[bllAstPnfChecker->isConjunctiveNormalForm(handledFormula.get())];
             buffer += '\n';
         }
 

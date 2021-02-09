@@ -74,7 +74,8 @@ BllAstSimplifier::optimizeDirectly(BllAstNode *node, BllAstSimplifier::Optimizat
     if (mask.doEliminateMultipleNegations && node->getOp()->getCode() == negationOpCode) {
         BllAstNode* probableSecondNegation = node->getChildren()[0];
 
-        if (probableSecondNegation->getOp()->getCode() == negationOpCode)
+        if (probableSecondNegation->getType() == BllAstNode::Type::OPERATOR &&
+            probableSecondNegation->getOp()->getCode() == negationOpCode)
             return probableSecondNegation->extractChild(probableSecondNegation->getChildren()[0]);
     }
 
