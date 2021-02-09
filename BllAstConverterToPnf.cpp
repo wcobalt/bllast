@@ -61,7 +61,7 @@ BllAstConverterToPnf::createMultiOperatorNode(std::vector<std::unique_ptr<BllAst
 
             nodes.erase(nodes.end() - 1);
 
-            currentNode = std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::OPERATOR,
+            currentNode = std::make_unique<BllAstNode>(BllAstNode::Type::OPERATOR,
                                                        "", false, op, children);
         }
 
@@ -77,20 +77,20 @@ BllAstConverterToPnf::createBinaryOperator(const BllAstOperator *op, std::unique
     children.emplace_back(std::move(child1));
     children.emplace_back(std::move(child2));
 
-    return std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::OPERATOR,
+    return std::make_unique<BllAstNode>(BllAstNode::Type::OPERATOR,
             "", false, op, children);
 }
 
 std::unique_ptr<BllAstNode> BllAstConverterToPnf::createVariableNode(std::string variableName, bool isNegated) const {
     std::vector<std::unique_ptr<BllAstNode>> stub{};
-    std::unique_ptr<BllAstNode> variableNode = std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::VARIABLE,
+    std::unique_ptr<BllAstNode> variableNode = std::make_unique<BllAstNode>(BllAstNode::Type::VARIABLE,
             std::move(variableName), false, nullptr, stub);
 
     if (isNegated) {
         std::vector<std::unique_ptr<BllAstNode>> children;
         children.emplace_back(std::move(variableNode));
 
-        return std::make_unique<BllAstNode>(BllAstNode::BllAstNodeType::OPERATOR,
+        return std::make_unique<BllAstNode>(BllAstNode::Type::OPERATOR,
                 "", false, negationOp, children);
     } else
         return variableNode;

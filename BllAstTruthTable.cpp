@@ -6,15 +6,15 @@
 
 #include <utility>
 #include <cstring>
-#include "TextCanvas.h"
-#include "TextCanvasUtils.h"
+#include "textcanvas/TextCanvas.h"
+#include "textcanvas/TextCanvasUtils.h"
 
 using namespace textcanvas;
 using namespace bllast;
 
-BllAstTruthTable::BllAstTruthTable(std::set<std::string> variableNames, std::vector<bool> truthTable)
+BllAstTruthTable::BllAstTruthTable(std::set<std::string> variableNames, std::vector<bool> truthTable, bool alwaysEquals)
         : variableNames(std::move(variableNames)),
-          truthTable(std::move(truthTable)) {}
+          truthTable(std::move(truthTable)), alwaysEquals(alwaysEquals) {}
 
 const std::set<std::string> &BllAstTruthTable::getVariableNames() const {
     return variableNames;
@@ -40,30 +40,33 @@ std::vector<bool> BllAstTruthTable::computeParametersSet(uint64_t number) const 
 std::string BllAstTruthTable::toString() const {
     unsigned variablesCount = variableNames.size();
 
-    size_t maximalVariableNameLength = 0;
+    if (variablesCount > 0) {
+        size_t maximalVariableNameLength = 0;
 
-    for (auto& name : variableNames) {
-        if (name.size() > maximalVariableNameLength) {
-            maximalVariableNameLength = name.size();
+        for (auto &name : variableNames) {
+            if (name.size() > maximalVariableNameLength) {
+                maximalVariableNameLength = name.size();
+            }
         }
-    }
 
-    unsigned variableCellSize = maximalVariableNameLength + VARIABLE_MARGIN * 2;
-    unsigned width = 2 + (variableCellSize + 1) * variablesCount + (VARIABLE_MARGIN * 2 + strlen(RESULT_TITLE));
-    unsigned height = 4 + truthTable.size();
+        unsigned variableCellSize = maximalVariableNameLength + VARIABLE_MARGIN * 2;
+        unsigned width = 2 + (variableCellSize + 1) * variablesCount + (VARIABLE_MARGIN * 2 + strlen(RESULT_TITLE));
+        unsigned height = 4 + truthTable.size();
 
-    TextCanvasUtils textCanvasUtils;
-    TextCanvas canvas = textCanvasUtils.createCanvas(width, height, FILLER);
+        TextCanvasUtils textCanvasUtils;
+        TextCanvas canvas = textCanvasUtils.createCanvas(width, height, FILLER);
 
-    placeHeader(canvas, textCanvasUtils, variableCellSize);
-    placeBody(canvas, textCanvasUtils, variableCellSize);
-    placeBorders(canvas, variableCellSize);
+        placeHeader(canvas, textCanvasUtils, variableCellSize);
+        placeBody(canvas, textCanvasUtils, variableCellSize);
+        placeBorders(canvas, variableCellSize);
 
-    std::string result = textCanvasUtils.transform(canvas);
+        std::string result = textCanvasUtils.transform(canvas);
 
-    textCanvasUtils.deleteCanvas(canvas);
+        textCanvasUtils.deleteCanvas(canvas);
 
-    return result;
+        return result;
+    } else
+        return "Always equals " + std::string(1, static_cast<char>('0' + alwaysEquals));
 }
 
 void BllAstTruthTable::placeHeader(TextCanvas &canvas, TextCanvasUtils &textCanvasUtils,

@@ -20,22 +20,24 @@ void UiMainLoop::start() {
         outputStream << GREETINGS;
         getline(inputStream, line);
 
-        bool found = false;
+        if (!line.empty()) {
+            bool found = false;
 
-        for (auto& command : uiCommands) {
-            if (command->check(line)) {
-                UiCommand::Result result = command->execute(line);
+            for (auto &command : uiCommands) {
+                if (command->check(line)) {
+                    UiCommand::Result result = command->execute(line);
 
-                outputStream << result.getBuffer();
+                    outputStream << result.getBuffer();
 
-                doStop = result.doExit();
+                    doStop = result.doExit();
 
-                found = true;
+                    found = true;
+                }
             }
-        }
 
-        if (!found)
-            outputStream << "Undefined command\n";
+            if (!found)
+                outputStream << "Undefined command\n";
+        }
     }
 }
 

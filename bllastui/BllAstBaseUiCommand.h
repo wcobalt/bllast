@@ -12,6 +12,7 @@
 #include "../ui/UiParameterInstance.h"
 #include "../BllAstNode.h"
 #include "../BllAstTruthTableComputer.h"
+#include "../BllAstSimplifier.h"
 
 namespace bllast {
     class BllAstBaseUiCommand : public ui::UiCommand {
@@ -21,8 +22,8 @@ namespace bllast {
         inline static const char* SIMPLIFICATION_LEVEL_3 = "s3";
 
         BllAstCalculator *bllAstCalculator;
-
         const BllAstTruthTableComputer* truthTableComputer;
+        const BllAstSimplifier* bllAstSimplifier;
 
         std::unique_ptr<ui::UiParameter> printAstParameter, printTruthTableParameter, simplifyParameter;
     public:
@@ -42,7 +43,7 @@ namespace bllast {
         };
 
         BllAstBaseUiCommand(BllAstCalculator *bllAstCalculator,
-                            const BllAstTruthTableComputer *truthTableComputer);
+                            const BllAstTruthTableComputer *truthTableComputer, const BllAstSimplifier* bllAstSimplifier);
     protected:
         inline static const char* DEFAULT_AST_TITLE = "Abstract Syntax Tree:";
         inline static const char* DEFAULT_TT_TITLE = "Truth Table:";

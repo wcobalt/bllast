@@ -76,6 +76,10 @@ namespace bllast {
         virtual bool isPerfectDisjunctiveNormalForm(const BllAstNode* node) const;
 
         virtual bool isPerfectConjunctiveNormalForm(const BllAstNode* node) const;
+
+        virtual bool isDisjunctiveNormalForm(const BllAstNode* node) const;
+
+        virtual bool isConjunctiveNormalForm(const BllAstNode* node) const;
     };
 }
 

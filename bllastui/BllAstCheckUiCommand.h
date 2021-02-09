@@ -17,10 +17,11 @@ namespace bllast {
 
         static inline const char *CHECK_COMMAND_NAME = "check";
 
-        std::unique_ptr<ui::UiParameter> pcnfParameter, pdnfParameter;
+        std::unique_ptr<ui::UiParameter> pcnfParameter, pdnfParameter, cnfParameter, dnfParameter;
     public:
         BllAstCheckUiCommand(BllAstCalculator *bllAstCalculator, const BllAstTruthTableComputer *truthTableComputer,
-                             const BllAstPnfChecker *bllAstPnfChecker, const BllAstParser *bllAstParser);
+                const BllAstSimplifier* bllAstSimplifier, const BllAstPnfChecker *bllAstPnfChecker,
+                const BllAstParser *bllAstParser);
 
         bool check(std::string_view command) const override;
 

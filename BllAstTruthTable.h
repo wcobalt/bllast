@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "TextCanvas.h"
-#include "TextCanvasUtils.h"
+#include "textcanvas/TextCanvas.h"
+#include "textcanvas/TextCanvasUtils.h"
 
 using namespace textcanvas;
 
@@ -22,6 +22,7 @@ namespace bllast {
         static inline const char FILLER = ' ';
         static inline const char* RESULT_TITLE = "Result";
 
+        bool alwaysEquals;
         std::set<std::string> variableNames;
         std::vector<bool> truthTable;
 
@@ -33,7 +34,7 @@ namespace bllast {
 
         void placeBorders(TextCanvas &canvas, unsigned varCellSize) const;
     public:
-        BllAstTruthTable(std::set<std::string> variableNames, std::vector<bool> truthTable);
+        BllAstTruthTable(std::set<std::string> variableNames, std::vector<bool> truthTable, bool alwaysEquals = false);
 
         const std::set<std::string>& getVariableNames() const;
 

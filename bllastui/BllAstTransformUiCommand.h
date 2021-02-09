@@ -24,7 +24,8 @@ namespace bllast {
                 std::string object) const;
     public:
         BllAstTransformUiCommand(BllAstCalculator *bllAstCalculator, const BllAstTruthTableComputer *truthTableComputer,
-                                 const BllAstConverterToPnf *bllAstConverterToPnf, const BllAstParser *bllAstParser);
+                const BllAstSimplifier* bllAstSimplifier, const BllAstConverterToPnf *bllAstConverterToPnf,
+                const BllAstParser *bllAstParser);
 
         bool check(std::string_view command) const override;
 

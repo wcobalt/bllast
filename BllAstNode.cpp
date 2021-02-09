@@ -4,13 +4,13 @@
 
 #include "BllAstNode.h"
 #include "BllAstOperator.h"
-#include "TextCanvas.h"
-#include "TextCanvasUtils.h"
+#include "textcanvas/TextCanvas.h"
+#include "textcanvas/TextCanvasUtils.h"
 
 using namespace bllast;
 using namespace textcanvas;
 
-BllAstNode::BllAstNodeType BllAstNode::getType() const {
+BllAstNode::Type BllAstNode::getType() const {
     return type;
 }
 
@@ -60,20 +60,20 @@ std::string BllAstNode::toAstInStringForm(unsigned nodeWidth) const {
 
 std::string BllAstNode::serialize(const BllAstNode *node) const {
     switch (node->type) {
-        case BllAstNodeType::LITERAL:
+        case Type::LITERAL:
             return std::string(1, static_cast<char>('0' + node->getValue()));
 
-        case BllAstNodeType::VARIABLE:
+        case Type::VARIABLE:
             return node->getVariableName();
 
-        case BllAstNodeType::OPERATOR:
+        case Type::OPERATOR:
             switch (node->getOp()->getArity()) {
                 case BllAstOperator::Arity::UNARY:
-                    return '(' + node->getOp()->getRepresentation() + serialize(node->getChildren()[0]) + ')';
+                    return LEFT_PARENTHESIS + node->getOp()->getRepresentation() + serialize(node->getChildren()[0]) + RIGHT_PARENTHESIS;
 
                 case BllAstOperator::Arity::BINARY:
-                    return '(' + serialize(node->getChildren()[0]) +
-                        node->getOp()->getRepresentation() + serialize(node->getChildren()[1]) + ')';
+                    return LEFT_PARENTHESIS + serialize(node->getChildren()[0]) +
+                        node->getOp()->getRepresentation() + serialize(node->getChildren()[1]) + RIGHT_PARENTHESIS;
 
                 default:
                     throw std::runtime_error("Unsupported arity");
@@ -90,13 +90,13 @@ std::string BllAstNode::toFormulaInStringForm() const {
 
 std::string BllAstNode::determineHead(const BllAstNode *node) const {
     switch (node->type) {
-        case BllAstNodeType::OPERATOR:
+        case Type::OPERATOR:
             return node->getOp()->getCode();
 
-        case BllAstNodeType::VARIABLE:
+        case Type::VARIABLE:
             return node->getVariableName();
 
-        case BllAstNodeType::LITERAL:
+        case Type::LITERAL:
             return std::string(1, static_cast<char>('0' + node->getValue()));
 
         default:
@@ -112,7 +112,7 @@ void BllAstNode::placeNodeOnCanvas(TextCanvas& canvas, const BllAstNode *node, T
 
     std::string head = determineHead(node);
 
-    if (node->type == BllAstNodeType::OPERATOR)
+    if (node->type == Type::OPERATOR)
         placeOperatorOnCanvas(canvas, textCanvasUtils, node, currentDepth, currentOffset);
 
     //it's supposed that NODE_WIDTH / 2 >= max head width
@@ -145,10 +145,10 @@ void BllAstNode::placeOperatorOnCanvas(TextCanvas& canvas, TextCanvasUtils& text
 
         for (size_t xx = (c == 0 ? nextX : rightSide); xx < (c == 0 ? leftSide : nextX); ++xx) {
             if (xx != branchX)
-                canvas.getPointer()[((xx < branchX) ^ (c == 0)) ? y : y + 1][xx] = '_';
+                canvas.getPointer()[((xx < branchX) ^ (c == 0)) ? y : y + 1][xx] = HORIZONTAL_BRANCH;
         }
 
-        canvas.getPointer()[nextLevelY][branchX] = (c == 0 ? '/' : '\\');
+        canvas.getPointer()[nextLevelY][branchX] = (c == 0 ? LEFT_BRANCH : RIGHT_BRANCH);
 
         placeNodeOnCanvas(canvas, child, textCanvasUtils, currentDepth + 1, n++);
     }
@@ -171,10 +171,36 @@ bool BllAstNode::getValue() const {
     return value;
 }
 
-BllAstNode::BllAstNode(BllAstNode::BllAstNodeType type, std::string variableName, bool value,
-                                    const BllAstOperator *op,
-                                    std::vector<std::unique_ptr<BllAstNode>> &children) : type(type), value(value),
+BllAstNode::BllAstNode(BllAstNode::Type type, std::string variableName, bool value,
+                       const BllAstOperator *op,
+                       std::vector<std::unique_ptr<BllAstNode>> &children) : type(type), value(value),
                                     variableName(std::move(variableName)), bllOperator(op) {
     for (auto& node : children)
         this->children.emplace_back(std::move(node));
+}
+
+std::unique_ptr<BllAstNode> BllAstNode::clone() const {
+    std::vector<std::unique_ptr<BllAstNode>> children;
+
+    if (type == Type::OPERATOR) {
+        for (auto& child : this->children) {
+            children.emplace_back(std::move(child->clone()));
+        }
+    }
+
+    return std::make_unique<BllAstNode>(type, variableName, value, bllOperator, children);
+}
+
+void BllAstNode::replaceChild(const BllAstNode *oldChild, std::unique_ptr<BllAstNode> newChild) {
+    for (auto & c : children) {
+        if (c.get() == oldChild)
+            c = std::move(newChild);
+    }
+}
+
+std::unique_ptr<BllAstNode> BllAstNode::extractChild(const BllAstNode *node) {
+    for (auto& child : children) {
+        if (child.get() == node)
+            return std::move(child);
+    }
 }
