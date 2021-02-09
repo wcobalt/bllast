@@ -27,33 +27,21 @@ std::unique_ptr<BllAstNode> BllAstSimplifier::simplify(const BllAstNode *node, m
 std::unique_ptr<BllAstNode>
 BllAstSimplifier::optimize(BllAstNode *node, OptimizationFeatures mask) const {
     if (node->getType() == BllAstNode::Type::OPERATOR) {
-        bool repeat;
-        std::vector<bool> simplifiedChildren(node->getChildren().size(), false);
+        std::vector<BllAstNode*> children = node->getChildren();
 
-        do {
-            repeat = false;
+        for (size_t c = 0; c < children.size(); ++c) {
+            BllAstNode *child = children[c];
 
-            auto directOptimizationResult = optimizeDirectly(node, mask);
+            std::unique_ptr<BllAstNode> ret = optimize(child, mask);
 
-            if (directOptimizationResult)
-                return directOptimizationResult;
+            if (ret)
+                node->replaceChild(child, std::move(ret));
+        }
 
-            std::vector<BllAstNode*> children = node->getChildren();
+        auto directOptimizationResult = optimizeDirectly(node, mask);
 
-            for (size_t c = 0; c < children.size(); ++c) {
-                if (!simplifiedChildren[c]) {
-                    BllAstNode *child = children[c];
-
-                    std::unique_ptr<BllAstNode> ret = optimize(child, mask);
-
-                    if (ret) {
-                        repeat = true;
-
-                        node->replaceChild(child, std::move(ret));
-                    }
-                }
-            }
-        } while (repeat);
+        if (directOptimizationResult)
+            return directOptimizationResult;
 
         return nullptr;
     } else

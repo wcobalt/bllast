@@ -106,6 +106,7 @@ int main() {
 
     //((!(!(A\/(0/\C))))/\(0\/((0~0)/\((1\/E)/\B))))
     //transform ((!(!(A\/(0/\C))))/\(0\/((0~0)/\((1\/E)/\B)))) -a -A -t -T -s=s3
+    //transform (1/\(0\/1)) -s=s3
 
     std::unique_ptr<BllAstSimplifier> bll_ast_simplifier = std::make_unique<BllAstSimplifier>(bll_ast_calculator.get(),
             CONJUNCTION_OP_CODE, DISJUNCTION_OP_CODE, NEGATION_OP_CODE);
