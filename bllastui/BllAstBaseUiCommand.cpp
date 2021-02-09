@@ -70,7 +70,8 @@ BllAstBaseUiCommand::simplify(const BllAstNode *root, std::string_view simplific
         BllAstSimplifier::mask_type mask = it->second;
 
         return bllAstSimplifier->simplify(root, mask);
-    }
+    } else
+        throw std::invalid_argument("Undefined level of simplification \"" + std::string(simplificationLevel) + "\"");
 }
 
 const UiParameter &BllAstBaseUiCommand::getPrintAstParameter() const {

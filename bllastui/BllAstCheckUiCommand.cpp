@@ -40,11 +40,13 @@ UiCommand::Result bllast::BllAstCheckUiCommand::execute(std::string_view command
 
         std::unique_ptr<BllAstNode> originalFormula = bllAstParser->parse(parseResult.getExpression());
 
+        std::string originalFormulaTitle = "Original formula ";
+
         if (findParameterInstance(parameters, &getPrintAstParameter()))
-            buffer += printAst(originalFormula.get()) + '\n';
+            buffer += printAst(originalFormula.get(), originalFormulaTitle + DEFAULT_AST_TITLE) + '\n';
 
         if (findParameterInstance(parameters, &getPrintTruthTableParameter()))
-            buffer += printTruthTable(originalFormula.get()) + '\n';
+            buffer += printTruthTable(originalFormula.get(), originalFormulaTitle + DEFAULT_TT_TITLE) + '\n';
 
         std::unique_ptr<BllAstNode> handledFormula = std::move(originalFormula);
 

@@ -48,7 +48,8 @@ UiCommand::Result BllAstTransformUiCommand::execute(std::string_view command) {
         std::unique_ptr<BllAstNode> originalFormula = bllAstParser->parse(parseResult.getExpression());
 
         buffer += printAstTruthTable(originalFormula.get(), findParameterInstance(parameters, &getPrintAstParameter()),
-                                     findParameterInstance(parameters, &getPrintTruthTableParameter()), "");
+                                     findParameterInstance(parameters, &getPrintTruthTableParameter()),
+                                     "Original formula");
 
         bool doPrintNewAst = findParameterInstance(parameters, printNewAstParameter.get()),
             doPrintNewTruthTable = findParameterInstance(parameters, printNewTruthTableParameter.get());
