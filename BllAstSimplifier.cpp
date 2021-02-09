@@ -28,6 +28,7 @@ std::unique_ptr<BllAstNode>
 BllAstSimplifier::optimize(BllAstNode *node, OptimizationFeatures mask) const {
     if (node->getType() == BllAstNode::Type::OPERATOR) {
         bool repeat;
+        std::vector<bool> simplifiedChildren(node->getChildren().size(), false);
 
         do {
             repeat = false;
@@ -37,13 +38,19 @@ BllAstSimplifier::optimize(BllAstNode *node, OptimizationFeatures mask) const {
             if (directOptimizationResult)
                 return directOptimizationResult;
 
-            for (auto& child : node->getChildren()) {
-                std::unique_ptr<BllAstNode> ret = optimize(child, mask);
+            std::vector<BllAstNode*> children = node->getChildren();
 
-                if (ret) {
-                    repeat = true;
+            for (size_t c = 0; c < children.size(); ++c) {
+                if (!simplifiedChildren[c]) {
+                    BllAstNode *child = children[c];
 
-                    node->replaceChild(child, std::move(ret));
+                    std::unique_ptr<BllAstNode> ret = optimize(child, mask);
+
+                    if (ret) {
+                        repeat = true;
+
+                        node->replaceChild(child, std::move(ret));
+                    }
                 }
             }
         } while (repeat);
