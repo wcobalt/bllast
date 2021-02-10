@@ -55,13 +55,13 @@ BllAstSimplifier::optimizeDirectly(BllAstNode *node, BllAstSimplifier::Optimizat
         return calculate(node);
 
     auto ret = optimizeJunction(node, disjunctionOpCode, mask.doCalculateAprioriKnownOperations,
-                                mask.doEliminateRedundantOperations, true);
+                                mask.doEliminateRedundantOperations, mask.doUseControversyLaw, true);
 
     if (ret)
         return ret;
 
     ret = optimizeJunction(node, conjunctionOpCode, mask.doCalculateAprioriKnownOperations,
-                           mask.doEliminateRedundantOperations, false);
+                           mask.doEliminateRedundantOperations, mask.doUseControversyLaw, false);
 
     if (ret)
         return ret;
@@ -81,8 +81,31 @@ BllAstSimplifier::optimizeDirectly(BllAstNode *node, BllAstSimplifier::Optimizat
 //e.g.: disj: 1, conj: 0
 std::unique_ptr<BllAstNode>
 BllAstSimplifier::optimizeJunction(BllAstNode *node, std::string_view opCode, bool optimizeAprioriKnown,
-                                   bool optimizeRedundant, bool specificity) const {
+                                   bool optimizeRedundant, bool optimizeControversyLaw, bool specificity) const {
     if (node->getOp()->getCode() == opCode) {
+        if (optimizeControversyLaw) {
+            std::vector<BllAstNode *> children = node->getChildren();
+            BllAstNode::Type type1 = children[0]->getType(), type2 = children[1]->getType();
+            bool controversyLaw = false;
+
+            BllAstNode* var, *op;
+
+            if (type1 == BllAstNode::Type::VARIABLE && type2 == BllAstNode::Type::OPERATOR) {
+                var = children[0];
+                op = children[1];
+                controversyLaw = true;
+            } else if (type2 == BllAstNode::Type::VARIABLE && type1 == BllAstNode::Type::OPERATOR) {
+                var = children[1];
+                op = children[0];
+                controversyLaw = true;
+            }
+
+            if (controversyLaw && op->getOp()->getCode() == negationOpCode &&
+                op->getChildren()[0]->getType() == BllAstNode::Type::VARIABLE &&
+                op->getChildren()[0]->getVariableName() == var->getVariableName())
+                return makeLiteral(specificity);
+        }
+
         auto literalChild = findChildOfType(node, true);
 
         if (literalChild) {
@@ -138,4 +161,5 @@ BllAstSimplifier::OptimizationFeatures::OptimizationFeatures(uint64_t mask) {
     doEliminateRedundantOperations = (mask & REDUNDANT_OPERATIONS_ELIMINATION);
     doCalculateAprioriKnownOperations = (mask & APRIORI_KNOWN_OPERATIONS_CALCULATION);
     doEliminateMultipleNegations = (mask & MULTIPLE_NEGATIONS_ELIMINATION);
+    doUseControversyLaw = (mask & CONTROVERSY_LAW);
 }

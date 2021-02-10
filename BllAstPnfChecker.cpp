@@ -67,7 +67,7 @@ bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllA
             return false;
     }
 }
-
+//transform (A/\(B/\(C/\(D/\(E/\(F/\(G/\(H/\(I/\(J/\(K/\(L/\(M/\(N/\(O/\(P/\(Q/\(R/\(S/\(T/\(U/\(V/\(W/\(X/\(Y/\Z)))))))))))))))))))))))))) -c
 std::string BllAstPnfChecker::generateVarSetSignature(const std::set<Variable> &varSet) const {
     std::string result;
 
@@ -97,7 +97,7 @@ bool BllAstPnfChecker::traverseFirstLayer(const std::vector<const BllAstNode *>&
             traverseFourthLayer(child, vars, false);
 
             result.insertVarSet(vars);
-        } else {
+        } else if (child->getType() == BllAstNode::Type::OPERATOR) {
             const std::string &opcode = child->getOp()->getCode();
             bool res;
 
@@ -116,7 +116,8 @@ bool BllAstPnfChecker::traverseFirstLayer(const std::vector<const BllAstNode *>&
 
             if (!res)
                 return false;
-        }
+        } else
+            return false;
     }
 
     return true;

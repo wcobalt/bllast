@@ -95,7 +95,7 @@ int main() {
             bll_ast_calculator.get(), bll_ast_truth_table_computer.get(), disjunction_operator.get(),
             conjunction_operator.get(), negation_operator.get());
 
-    //((!A)\/(B/\C)), ((A\/((!B)\/C))/\((B\/((!C)\/A))/\(B\/((C)\/A)))), ((A)\/((!A)\/B))
+    //((!A)\/(B/\C)), ((A\/((!B)\/C))/\((B\/((!C)\/A))/\(B\/((C)\/A)))), (A\/((!A)\/B))
     //transform ((!A)\/(B/\C)) -t -a -T -A -d -c
     //transform ((!Z)\/(X/\Y)) --print-tt --print-ast --print-new-ast --print-new-tt --pcnf --pdnf
     //transform ((!A)\/(B/\C)) -a -A -s=s3
@@ -106,6 +106,7 @@ int main() {
 
     //((!(!(A\/(0/\C))))/\(0\/((0~0)/\((1\/E)/\B))))
     //transform ((!(!(A\/(0/\C))))/\(0\/((0~0)/\((1\/E)/\B)))) -a -A -t -T -s=s3
+    //transform ((!(!(!(A\/(0/\C)))))/\(0\/((0~0)/\((1\/E)/\A)))) -a -A -t -T -s=s4
     //transform (1/\(0\/1)) -s=s3
 
     std::unique_ptr<BllAstSimplifier> bll_ast_simplifier = std::make_unique<BllAstSimplifier>(bll_ast_calculator.get(),

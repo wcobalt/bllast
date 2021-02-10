@@ -128,10 +128,10 @@ std::unique_ptr<BllAstNode> BllAstParser::parseParenthesisedExpression(std::stri
     expression.remove_suffix(1);
 
     if (!expression.empty()) {
-        //three modes: expr, unary and binary ops
-        if (checkExpression(expression) == Starting::FULL_MATCH) {
+        //three modes: p. expr, unary and binary ops
+        if (checkParenthesisedExpression(expression)) {
             //expr
-            return parseExpression(expression);
+            return parseParenthesisedExpression(expression);
         } else {
             //ops
             return parseOperators(expression);

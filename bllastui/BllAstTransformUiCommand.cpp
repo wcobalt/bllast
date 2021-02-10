@@ -69,13 +69,13 @@ UiCommand::Result BllAstTransformUiCommand::execute(std::string_view command) {
         if (findParameterInstance(parameters, pdnfParameter.get())) {
             std::unique_ptr<BllAstNode> pdnf = bllAstConverterToPnf->transformToPdnf(handledFormula.get());
 
-            buffer += printPnf(pdnf.get(), doPrintNewTruthTable, doPrintNewAst, "PDNF");
+            buffer += printPnf(pdnf.get(), doPrintNewAst, doPrintNewTruthTable, "PDNF");
         }
 
         if (findParameterInstance(parameters, pcnfParameter.get())) {
             std::unique_ptr<BllAstNode> pcnf = bllAstConverterToPnf->transformToPcnf(handledFormula.get());
 
-            buffer += printPnf(pcnf.get(), doPrintNewTruthTable, doPrintNewAst, "PCNF");
+            buffer += printPnf(pcnf.get(), doPrintNewAst, doPrintNewTruthTable, "PCNF");
         }
 
         return {false, 0, buffer};

@@ -7,7 +7,7 @@
 
 using namespace bllast;
 using namespace ui;
-
+//check (((A\/B)/\((!A)\/B))\/((!B)\/A)) -c
 BllAstCheckUiCommand::BllAstCheckUiCommand(BllAstCalculator *bllAstCalculator,
                                            const BllAstTruthTableComputer *truthTableComputer,
                                            const BllAstSimplifier* bllAstSimplifier,
@@ -91,7 +91,7 @@ UiCommand::Result bllast::BllAstCheckUiCommand::execute(std::string_view command
 
         return {false, 0, buffer};
     } catch (std::invalid_argument& exc) {
-        buffer += "\nException: " + std::string(exc.what()) + '\n';
+        buffer += "Exception: " + std::string(exc.what()) + '\n';
 
         return {false, 1, buffer};
     }

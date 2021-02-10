@@ -20,6 +20,7 @@ namespace bllast {
         inline static const char* SIMPLIFICATION_LEVEL_1 = "s1";
         inline static const char* SIMPLIFICATION_LEVEL_2 = "s2";
         inline static const char* SIMPLIFICATION_LEVEL_3 = "s3";
+        inline static const char* SIMPLIFICATION_LEVEL_4 = "s4";
 
         BllAstCalculator *bllAstCalculator;
         const BllAstTruthTableComputer* truthTableComputer;
@@ -28,7 +29,7 @@ namespace bllast {
         std::unique_ptr<ui::UiParameter> printAstParameter, printTruthTableParameter, simplifyParameter;
     public:
         class StandardFormParseResult {
-            inline static const char* STANDARD_FORM_PATTERN = R"-(^\s*([^\s]+)\s+([^\s]+)\s+(.*+)\s*$)-";
+            inline static const char* STANDARD_FORM_PATTERN = R"-(^\s*([^\s]+)\s+([^\s]+)(\s+(.*+)\s*)?$)-";
 
             std::string commandName, expression, paramsString;
 

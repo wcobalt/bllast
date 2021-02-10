@@ -20,6 +20,7 @@ namespace bllast {
             bool doEliminateRedundantOperations{};
             bool doCalculateAprioriKnownOperations{};
             bool doEliminateMultipleNegations{};
+            bool doUseControversyLaw{};
 
             explicit OptimizationFeatures(mask_type mask);
         };
@@ -38,7 +39,7 @@ namespace bllast {
 
         virtual std::unique_ptr<BllAstNode>
         optimizeJunction(BllAstNode *node, std::string_view opCode, bool optimizeAprioriKnown,
-                         bool optimizeRedundant, bool specificity) const;
+                         bool optimizeRedundant, bool optimizeControversyLaw, bool specificity) const;
 
         virtual std::unique_ptr<BllAstNode> optimizeDirectly(BllAstNode *node, OptimizationFeatures mask) const;
 
@@ -48,6 +49,7 @@ namespace bllast {
         const static inline mask_type REDUNDANT_OPERATIONS_ELIMINATION = 1u << 1u;
         const static inline mask_type APRIORI_KNOWN_OPERATIONS_CALCULATION = 1u << 2u;
         const static inline mask_type MULTIPLE_NEGATIONS_ELIMINATION = 1u << 3u;
+        const static inline mask_type CONTROVERSY_LAW = 1u << 4u;
 
         BllAstSimplifier(BllAstCalculator *bllAstCalculator, std::string conjunctionOpCode,
                          std::string disjunctionOpCode, std::string negationOpCode);
