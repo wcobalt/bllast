@@ -1,5 +1,5 @@
 //
-// Created by wcobalt on 2/7/21.
+// Created by Артём Драпун (wcobalt), 821702 on 2/7/21.
 //
 
 #include "BllAstPnfChecker.h"
@@ -49,7 +49,6 @@ bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllA
             return false;
 
         const std::set<Variable> &referenceVarSet = *result.getSet().begin(); //set a priori cannot be empty
-        std::string signature = generateVarSetSignature(referenceVarSet);
 
         if (referenceVarSet.size() == determineUniqueVarCount(referenceVarSet)) {
             //the following algorithm has bad O-notation complexity but still...
@@ -58,7 +57,8 @@ bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllA
                 const std::set<Variable> varSetToExamine = *it;
 
                 if (varSetToExamine.size() != determineUniqueVarCount(varSetToExamine) ||
-                    signature != generateVarSetSignature(varSetToExamine))
+                    varSetToExamine.size() != referenceVarSet.size() ||
+                    !compareTwoVarSets(referenceVarSet, varSetToExamine))
                     return false;
             }
 
@@ -67,14 +67,20 @@ bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllA
             return false;
     }
 }
-//transform (A/\(B/\(C/\(D/\(E/\(F/\(G/\(H/\(I/\(J/\(K/\(L/\(M/\(N/\(O/\(P/\(Q/\(R/\(S/\(T/\(U/\(V/\(W/\(X/\(Y/\Z)))))))))))))))))))))))))) -c
-std::string BllAstPnfChecker::generateVarSetSignature(const std::set<Variable> &varSet) const {
-    std::string result;
 
-    for (const auto& var : varSet)
-        result += var.getName();
+bool BllAstPnfChecker::compareTwoVarSets(const std::set<Variable> &varSet1, const std::set<Variable> &varSet2) const {
+    auto it1 = varSet1.begin();
+    auto it2 = varSet2.begin();
 
-    return result;
+    while (it1 != varSet1.end()) {
+        if (it1->getName() !=  it2->getName())
+            return false;
+
+        ++it1;
+        ++it2;
+    }
+
+    return true;
 }
 
 unsigned BllAstPnfChecker::determineUniqueVarCount(const std::set<Variable> &varSet) const {

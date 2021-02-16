@@ -1,5 +1,5 @@
 //
-// Created by wcobalt on 2/6/21.
+// Created by Артём Драпун (wcobalt), 821702 on 2/6/21.
 //
 #include <iostream>
 #include <cmath>
@@ -129,13 +129,13 @@ std::unique_ptr<BllAstNode> BllAstParser::parseParenthesisedExpression(std::stri
 
     if (!expression.empty()) {
         //three modes: p. expr, unary and binary ops
-        if (checkParenthesisedExpression(expression)) {
+      //  if (checkParenthesisedExpression(expression)) {
             //expr
-            return parseParenthesisedExpression(expression);
-        } else {
+       //     return parseParenthesisedExpression(expression);
+       // } else {
             //ops
             return parseOperators(expression);
-        }
+       // }
     } else
         throw std::invalid_argument("Invalid expression: parenthesised expression cannot be empty");
 }

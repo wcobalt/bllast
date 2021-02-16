@@ -1,5 +1,5 @@
 //
-// Created by wcobalt on 2/7/21.
+// Created by Артём Драпун (wcobalt), 821702 on 2/7/21.
 //
 
 #ifndef INC_1_BLLASTTRUTHTABLECOMPUTER_H

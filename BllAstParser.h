@@ -1,5 +1,5 @@
 //
-// Created by wcobalt on 2/6/21.
+// Created by Артём Драпун (wcobalt), 821702 on 2/6/21.
 //
 
 #ifndef INC_1_BLLASTPARSER_H
