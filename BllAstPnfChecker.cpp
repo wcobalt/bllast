@@ -1,5 +1,5 @@
 //
-// Created by wcobalt on 2/7/21.
+// Created by Артём Драпун (wcobalt), 821702 on 2/7/21.
 //
 
 #include "BllAstPnfChecker.h"
@@ -23,6 +23,20 @@ bool BllAstPnfChecker::isPerfectConjunctiveNormalForm(const BllAstNode *node) co
             {conjunctionOpCode, disjunctionOpCode, negationOpCode});
 }
 
+bool BllAstPnfChecker::isDisjunctiveNormalForm(const BllAstNode *node) const {
+    TraversalResult result{};
+
+    return traverseFirstLayer({node},
+            {disjunctionOpCode, conjunctionOpCode, negationOpCode}, result);
+}
+
+bool BllAstPnfChecker::isConjunctiveNormalForm(const BllAstNode *node) const {
+    TraversalResult result{};
+
+    return traverseFirstLayer({node},
+            {conjunctionOpCode, disjunctionOpCode, negationOpCode}, result);
+}
+
 bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllAstPnfChecker::Layout &layout) const {
     TraversalResult result{};
 
@@ -35,7 +49,6 @@ bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllA
             return false;
 
         const std::set<Variable> &referenceVarSet = *result.getSet().begin(); //set a priori cannot be empty
-        std::string signature = generateVarSetSignature(referenceVarSet);
 
         if (referenceVarSet.size() == determineUniqueVarCount(referenceVarSet)) {
             //the following algorithm has bad O-notation complexity but still...
@@ -44,7 +57,8 @@ bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllA
                 const std::set<Variable> varSetToExamine = *it;
 
                 if (varSetToExamine.size() != determineUniqueVarCount(varSetToExamine) ||
-                    signature != generateVarSetSignature(varSetToExamine))
+                    varSetToExamine.size() != referenceVarSet.size() ||
+                    !compareTwoVarSets(referenceVarSet, varSetToExamine))
                     return false;
             }
 
@@ -54,13 +68,19 @@ bool BllAstPnfChecker::checkPerfectNormalForm(const BllAstNode *root, const BllA
     }
 }
 
-std::string BllAstPnfChecker::generateVarSetSignature(const std::set<Variable> &varSet) const {
-    std::string result;
+bool BllAstPnfChecker::compareTwoVarSets(const std::set<Variable> &varSet1, const std::set<Variable> &varSet2) const {
+    auto it1 = varSet1.begin();
+    auto it2 = varSet2.begin();
 
-    for (const auto& var : varSet)
-        result += var.getName();
+    while (it1 != varSet1.end()) {
+        if (it1->getName() !=  it2->getName())
+            return false;
 
-    return result;
+        ++it1;
+        ++it2;
+    }
+
+    return true;
 }
 
 unsigned BllAstPnfChecker::determineUniqueVarCount(const std::set<Variable> &varSet) const {
@@ -79,11 +99,11 @@ bool BllAstPnfChecker::traverseFirstLayer(const std::vector<const BllAstNode *>&
     for (auto& child : nodes) {
         std::set<Variable> vars;
 
-        if (child->getType() == BllAstNode::BllAstNodeType::VARIABLE) {
+        if (child->getType() == BllAstNode::Type::VARIABLE) {
             traverseFourthLayer(child, vars, false);
 
             result.insertVarSet(vars);
-        } else {
+        } else if (child->getType() == BllAstNode::Type::OPERATOR) {
             const std::string &opcode = child->getOp()->getCode();
             bool res;
 
@@ -102,7 +122,8 @@ bool BllAstPnfChecker::traverseFirstLayer(const std::vector<const BllAstNode *>&
 
             if (!res)
                 return false;
-        }
+        } else
+            return false;
     }
 
     return true;
@@ -112,7 +133,7 @@ bool BllAstPnfChecker::traverseSecondLayer(const BllAstNode *node, const BllAstP
                                            std::set<Variable> &set) const {
     //goto: (nego) - third layer, (value) - fourth layer, (slopcode) - second layer
     for (auto& child : node->getChildren()) {
-        if (child->getType() == BllAstNode::BllAstNodeType::VARIABLE)
+        if (child->getType() == BllAstNode::Type::VARIABLE)
             traverseFourthLayer(child, set, false);
         else {
             const std::string &opcode = child->getOp()->getCode();
@@ -140,7 +161,7 @@ bool BllAstPnfChecker::traverseThirdLayer(const BllAstNode *node, const BllAstPn
     //it's supposed that it has one and only one child
     const BllAstNode* child = node->getChildren()[0];
 
-    if (child->getType() == BllAstNode::BllAstNodeType::VARIABLE)
+    if (child->getType() == BllAstNode::Type::VARIABLE)
         traverseFourthLayer(child, subset, true);
     else
         return false;

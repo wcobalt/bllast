@@ -1,9 +1,9 @@
 //
-// Created by wcobalt on 2/6/21.
+// Created by Артём Драпун (wcobalt), 821702 on 2/6/21.
 //
 
-#ifndef INC_1_BLLASTMAKER_H
-#define INC_1_BLLASTMAKER_H
+#ifndef INC_1_BLLASTPARSER_H
+#define INC_1_BLLASTPARSER_H
 
 #include <string>
 #include <vector>
@@ -12,9 +12,9 @@
 #include "BllAstNode.h"
 
 namespace bllast {
-    class BllAstMaker {
+    class BllAstParser {
     public:
-        virtual void extendWithOperator(std::unique_ptr<BllAstOperator> bllOperator);
+        virtual void extendWithOperator(const BllAstOperator *bllOperator);
 
         virtual std::unique_ptr<BllAstNode> parse(std::string_view expression) const;
     protected:
@@ -32,7 +32,7 @@ namespace bllast {
         const static inline char* FALSE_LITERAL = "0";
         const static inline unsigned long EXPR_ERR_NEAR_SIZE = 5;
 
-        std::vector<std::unique_ptr<BllAstOperator>> operators;
+        std::vector<const BllAstOperator*> operators;
 
         enum class Starting {
             STARTING, FULL_MATCH, NO_WAY
@@ -69,4 +69,4 @@ namespace bllast {
 }
 
 
-#endif //INC_1_BLLASTMAKER_H
+#endif //INC_1_BLLASTPARSER_H

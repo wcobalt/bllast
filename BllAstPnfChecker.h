@@ -1,5 +1,5 @@
 //
-// Created by wcobalt on 2/7/21.
+// Created by Артём Драпун (wcobalt), 821702 on 2/7/21.
 //
 
 #ifndef INC_1_BLLASTPNFCHECKER_H
@@ -59,7 +59,7 @@ namespace bllast {
 
         unsigned determineUniqueVarCount(const std::set<Variable>& varSet) const;
 
-        std::string generateVarSetSignature(const std::set<Variable>& varSet) const;
+        bool compareTwoVarSets(const std::set<Variable> &varSet1, const std::set<Variable> &varSet2) const;
 
         bool checkPerfectNormalForm(const BllAstNode* root, const Layout& layout) const;
 
@@ -76,6 +76,10 @@ namespace bllast {
         virtual bool isPerfectDisjunctiveNormalForm(const BllAstNode* node) const;
 
         virtual bool isPerfectConjunctiveNormalForm(const BllAstNode* node) const;
+
+        virtual bool isDisjunctiveNormalForm(const BllAstNode* node) const;
+
+        virtual bool isConjunctiveNormalForm(const BllAstNode* node) const;
     };
 }
 
