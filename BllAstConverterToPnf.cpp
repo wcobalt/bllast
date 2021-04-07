@@ -70,17 +70,6 @@ BllAstConverterToPnf::createMultiOperatorNode(std::vector<std::unique_ptr<BllAst
         return nullptr;
 }
 
-std::unique_ptr<BllAstNode>
-BllAstConverterToPnf::createBinaryOperator(const BllAstOperator *op, std::unique_ptr<BllAstNode> child1,
-                                           std::unique_ptr<BllAstNode> child2) const {
-    std::vector<std::unique_ptr<BllAstNode>> children;
-    children.emplace_back(std::move(child1));
-    children.emplace_back(std::move(child2));
-
-    return std::make_unique<BllAstNode>(BllAstNode::Type::OPERATOR,
-            "", false, op, children);
-}
-
 std::unique_ptr<BllAstNode> BllAstConverterToPnf::createVariableNode(std::string variableName, bool isNegated) const {
     std::vector<std::unique_ptr<BllAstNode>> stub{};
     std::unique_ptr<BllAstNode> variableNode = std::make_unique<BllAstNode>(BllAstNode::Type::VARIABLE,

@@ -20,9 +20,6 @@ namespace bllast {
         std::unique_ptr<BllAstNode> createMultiOperatorNode(std::vector<std::unique_ptr<BllAstNode>>& nodes,
                 const BllAstOperator* op) const;
 
-        std::unique_ptr<BllAstNode> createBinaryOperator(const BllAstOperator* op,
-                std::unique_ptr<BllAstNode> child1, std::unique_ptr<BllAstNode> child2) const;
-
         std::unique_ptr<BllAstNode> createVariableNode(std::string variableName, bool isNegated) const;
 
         std::unique_ptr<BllAstNode> convertToPnf(const BllAstNode* root, bool isPdnf) const;
